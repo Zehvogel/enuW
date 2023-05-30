@@ -16,7 +16,8 @@ podioEvtSvc = k4DataSvc('EventDataSvc')
 
 #====================================================================
 
-fileNameBase = "E250-SetA.P4f_sw_sl.Gwhizard-2_8_5.eL.pR.I500106.0"
+#fileNameBase = "E250-SetA.P4f_sw_sl.Gwhizard-2_8_5.eL.pR.I500106.0"
+fileNameBase = "E250-SetA.P4f_sw_sl.Gwhizard-2_8_5.eR.pL.I500108.0"
 
 inFileName = fileNameBase +".slcio"
 outFileName = fileNameBase +"_edm4hep.root"
@@ -33,7 +34,7 @@ if nEvt > maxEvt:
 #====================================================================
 
 
-# --- conversion tool:  configure the collections to convert 
+# --- conversion tool:  configure the collections to convert
 edmConvTool = Lcio2EDM4hepTool('LCIO2EDM4hep')
 edmConvTool.convertAll = False
 edmConvTool.collNameMapping = {
@@ -60,8 +61,8 @@ write.outputCommands = ["keep *"]
 
 # --- need to attach the conversion tool to one Marlin processor - use StatusMonitor here
 status = MarlinProcessorWrapper("MyStatusmonitor")
-status.OutputLevel = INFO 
-status.ProcessorType = "Statusmonitor" 
+status.OutputLevel = INFO
+status.ProcessorType = "Statusmonitor"
 status.Parameters = {"HowOften": ["1"]}
 
 status.Lcio2EDM4hepTool = edmConvTool
