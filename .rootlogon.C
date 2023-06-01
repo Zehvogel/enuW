@@ -1,7 +1,7 @@
 {
- 
+
 // these three lines are essential, don't touch
- 
+
 gInterpreter->AddIncludePath("$LCIO");
 gSystem->Load("${LCIO}/lib64/liblcio.so");
 gSystem->Load("${LCIO}/lib64/liblcioDict.so");
@@ -39,10 +39,10 @@ ildStyle->SetLabelColor(kBlack,"xyz");
 
 //set the default title color to be black
 ildStyle->SetTitleColor(kBlack);
- 
+
 //set the margins
-ildStyle->SetPadBottomMargin(0.15);
-ildStyle->SetPadTopMargin(0.03);
+ildStyle->SetPadBottomMargin(0.18);
+ildStyle->SetPadTopMargin(0.06);
 ildStyle->SetPadRightMargin(0.05);
 ildStyle->SetPadLeftMargin(0.10);
 
@@ -83,7 +83,7 @@ ildStyle->SetOptFit(0);
 //marker settings
 ildStyle->SetMarkerStyle(20);
 ildStyle->SetMarkerSize(0.7);
-ildStyle->SetLineWidth(2); 
+ildStyle->SetLineWidth(2);
 
 //done
 ildStyle->cd();

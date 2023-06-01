@@ -16,8 +16,10 @@ podioEvtSvc = k4DataSvc('EventDataSvc')
 
 #====================================================================
 
+fileNameBase = "E250-SetA.P4f_sw_sl.Gwhizard-2_8_5.eL.pL.I500105.0"
 #fileNameBase = "E250-SetA.P4f_sw_sl.Gwhizard-2_8_5.eL.pR.I500106.0"
-fileNameBase = "E250-SetA.P4f_sw_sl.Gwhizard-2_8_5.eR.pL.I500108.0"
+#fileNameBase = "E250-SetA.P4f_sw_sl.Gwhizard-2_8_5.eR.pR.I500107.0"
+#fileNameBase = "E250-SetA.P4f_sw_sl.Gwhizard-2_8_5.eR.pL.I500108.0"
 
 inFileName = fileNameBase +".slcio"
 outFileName = fileNameBase +"_edm4hep.root"
