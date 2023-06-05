@@ -44,7 +44,7 @@ ildStyle->SetTitleColor(kBlack);
 ildStyle->SetPadBottomMargin(0.18);
 ildStyle->SetPadTopMargin(0.06);
 ildStyle->SetPadRightMargin(0.05);
-ildStyle->SetPadLeftMargin(0.10);
+ildStyle->SetPadLeftMargin(0.15);
 
 //set axis label and title text sizes
 ildStyle->SetLabelFont(42,"xyz");
