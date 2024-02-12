@@ -1,0 +1,3 @@
+[submodule "CLDConfig"]
+	path = CLDConfig
+	url = https://github.com/key4hep/CLDConfig.git
