@@ -1,0 +1,6 @@
+/ilc/prod/ilc/mc-2020/ild/dst-merged/250-SetA/4f_singleW_semileptonic/ILD_l5_o1_v02/v02-02/00015176/000/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500106.P4f_sw_sl.eL.pR.n000.d_dstm_15176_0.slcio
+/ilc/prod/ilc/mc-2020/ild/dst-merged/250-SetA/4f_singleW_semileptonic/ILD_l5_o1_v02/v02-02/00015176/000/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500106.P4f_sw_sl.eL.pR.n000.d_dstm_15176_1.slcio
+/ilc/prod/ilc/mc-2020/ild/dst-merged/250-SetA/4f_singleW_semileptonic/ILD_l5_o1_v02/v02-02/00015176/000/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500106.P4f_sw_sl.eL.pR.n000.d_dstm_15176_2.slcio
+/ilc/prod/ilc/mc-2020/ild/dst-merged/250-SetA/4f_singleW_semileptonic/ILD_l5_o1_v02/v02-02/00015176/000/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500106.P4f_sw_sl.eL.pR.n000.d_dstm_15176_3.slcio
+/ilc/prod/ilc/mc-2020/ild/dst-merged/250-SetA/4f_singleW_semileptonic/ILD_l5_o1_v02/v02-02/00015176/000/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500106.P4f_sw_sl.eL.pR.n000.d_dstm_15176_4.slcio
+/ilc/prod/ilc/mc-2020/ild/dst-merged/250-SetA/4f_singleW_semileptonic/ILD_l5_o1_v02/v02-02/00015176/000/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500106.P4f_sw_sl.eL.pR.n000.d_dstm_15176_5.slcio
