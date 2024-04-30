@@ -51,7 +51,7 @@ MyAIDAProcessor.Parameters = {
                               }
 
 # setup AIDA histogramming and add eventual background overlay
-algList.append(MyAIDAProcessor)
+# algList.append(MyAIDAProcessor)
 
 truejet = MarlinProcessorWrapper("truejet")
 truejet.OutputLevel = WARNING
