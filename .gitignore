@@ -3,3 +3,16 @@ plots/
 *.root
 *.slcio
 *.json
+*.f90
+*.mod
+*.smod
+*.la
+*.lo
+*.o
+*.makefile
+*.phs
+*.vg
+*.so
+*.so.*
+*.a
+*.lai
