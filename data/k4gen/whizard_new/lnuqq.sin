@@ -1,33 +1,37 @@
-model = SM_Higgs_CKM
+model = SM
 #seed = 4711
 ?isr_handler = false
 
 #?omega_write_phs_output = true
 #$phs_method = "fast_wood"
 
-?vis_diags = true
-?vis_channels = true
+#?vis_diags = true
 
-?resonance_history = true
+#resonance_history = true
 resonance_on_shell_limit = 16
 resonance_on_shell_turnoff = 2
 
-# alias up_type_q = u:c:U:C
-alias up_type_q = u:U
-# alias down_type_q = d:s:b:D:S:B
-alias down_type_q = d:D
+#process munuqq = e1, E1 => (e2,N2, u, D) +
+#                          (E2,n2, U, d)
 
-#process enuqq = e1, E1 => (e1,N1, up_type_q, down_type_q) +
-#                          (E1,n1, up_type_q, down_type_q)
-#process munuqq = e1, E1 => (e2,N2, up_type_q, down_type_q) +
-#                          (E2,n2, up_type_q, down_type_q)
-process enuqq = e1, E1 => (e1,N1, u, D) +
-                          (E1,n1, U, d)
-process munuqq = e1, E1 => (e2,N2, u, D) +
-                          (E2,n2, U, d)
+process enuqq_all = e1, E1 => (e1,N1, u, D) +
+                              (E1,n1, U, d)
+                              {?resonance_history = true}
 
-#luminosity = 1 #fb^-1
-n_events = 10000
+process enuqq_ww_e = e1, E1 => (e1,N1, Wp) { $restrictions = "3 + 4 ~ W-" }
+process enuqq_ww_p = e1, E1 => (E1,n1, Wm) { $restrictions = "3 + 4 ~ W+" }
+
+process enuqq_sw_e = e1, E1 => (e1,N1, Wp) { $restrictions = "!W-" ?resonance_history = false }
+process enuqq_sw_p = e1, E1 => (E1,n1, Wm) { $restrictions = "!W+" ?resonance_history = false }
+
+process Wp_decay = Wp => u, D
+process Wm_decay = Wm => U, d
+
+unstable Wp (Wp_decay)
+unstable Wm (Wm_decay)
+
+#luminosity = 10 #fb^-1
+n_events = 100000
 sqrts = 250
 ! All quark masses are zero, or are set to zero here, to
 ! allow for flavour sums
@@ -40,15 +44,17 @@ mZ = 91.1876
 wZ = 2.4952
 mW = 80.379
 wW = 2.085
-sample_format = hepmc
-?hepmc_output_cross_section = true
-?write_raw = false
+sample_format = lcio
 ?unweighted = true
 
-cuts = all abs (Theta) > 10 degree [e1:E1:e2:E2]
+cuts = all abs (cos (Theta)) < cos (0.05 rad) [e1:E1:e2:E2]
+
+iterations = 15:100000:"gw", 5:200000
 
 compile
-integrate (enuqq)
-integrate (munuqq)
-#simulate (enuqq)
-#simulate (munuqq)
+integrate (enuqq_all)
+integrate (enuqq_sw_e)
+integrate (enuqq_sw_p)
+simulate (enuqq_all)
+simulate (enuqq_sw_e)
+simulate (enuqq_sw_p)
