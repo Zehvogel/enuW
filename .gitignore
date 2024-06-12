@@ -45,3 +45,8 @@ plots/
 # *.eps
 # *.pdf
 ild_whizard_example/
+## Madgraph
+**/Output
+**/py.py
+**/MG5_debug
+*.lhe

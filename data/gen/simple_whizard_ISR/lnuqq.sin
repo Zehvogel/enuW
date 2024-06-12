@@ -1,0 +1,44 @@
+model = SM
+
+#?vis_diags = true
+
+?resonance_history = true
+resonance_on_shell_limit = 16
+resonance_on_shell_turnoff = 2
+
+process munuqq = e1, E1 => (e2,N2, u, D) +
+                           (E2,n2, U, d)
+
+process enuqq = e1, E1 => (e1,N1, u, D) +
+                          (E1,n1, U, d)
+
+beams = e1, E1 => isr
+
+luminosity = 500 #fb^-1
+# n_events = 100000
+sqrts = 250
+
+! All quark masses are zero, or are set to zero here, to
+! allow for flavour sums
+! ms = 0
+! mc = 0
+! mb = 0 # only needed when going to SM_CKM anyway
+
+# k4Gen values not whizard or ILC defaults...
+mZ = 91.1876
+wZ = 2.4952
+mW = 80.379
+wW = 2.085
+
+sample_format = lcio
+?unweighted = true
+
+# 50 mrad cut, inner lumi cal cone so not visible anyway
+cuts = all abs (cos (Theta)) < cos (0.05 rad) [e1:E1:e2:E2]
+
+iterations = 15:100000:"gw", 5:200000
+
+compile
+integrate (munuqq, enuqq)
+simulate (munuqq)
+simulate (enuqq)
