@@ -41,8 +41,8 @@ ildStyle->SetLabelColor(kBlack,"xyz");
 ildStyle->SetTitleColor(kBlack);
 
 //set the margins
-ildStyle->SetPadBottomMargin(0.18);
-ildStyle->SetPadTopMargin(0.06);
+ildStyle->SetPadBottomMargin(0.17);
+ildStyle->SetPadTopMargin(0.08);
 ildStyle->SetPadRightMargin(0.16);
 ildStyle->SetPadLeftMargin(0.15);
 
