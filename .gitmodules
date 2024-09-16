@@ -1,3 +1,6 @@
 [submodule "CLDConfig"]
 	path = CLDConfig
 	url = https://github.com/key4hep/CLDConfig.git
+[submodule "ILDConfig"]
+	path = ILDConfig
+	url = https://github.com/iLCSoft/ILDConfig.git

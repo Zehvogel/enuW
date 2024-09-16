@@ -53,11 +53,33 @@ MyAIDAProcessor.Parameters = {
 # setup AIDA histogramming and add eventual background overlay
 # algList.append(MyAIDAProcessor)
 
+EventNumber = MarlinProcessorWrapper("EventNumber")
+EventNumber.OutputLevel = INFO
+EventNumber.ProcessorType = "Statusmonitor"
+EventNumber.Parameters = {
+                          "HowOften": ["1"]
+                          }
+algList.append(EventNumber)
+
+CheatedOverlayRemoval = MarlinProcessorWrapper("CheatedOverlayRemoval")
+CheatedOverlayRemoval.OutputLevel = WARNING
+CheatedOverlayRemoval.ProcessorType = "CheatedMCOverlayRemoval"
+CheatedOverlayRemoval.Parameters = {
+    "RecoParticleCollection": ["PandoraPFOs"],
+    "MCParticleCollection": ["MCParticlesSkimmed"],
+    "RecoMCTruthLink": ["RecoMCTruthLink"],
+    "MCTruthRecoLink": ["MCTruthRecoLink"],
+    "OutputPfoCollection": ["PFOsWithoutMCOverlay"],
+    "OutputOverlayCollection": ["PFOsFromOverlay"],
+}
+algList.append(CheatedOverlayRemoval)
+
 truejet = MarlinProcessorWrapper("truejet")
 truejet.OutputLevel = WARNING
 truejet.ProcessorType = "TrueJet"
 truejet.Parameters = {
-    "MCParticleCollection": ["MCParticle"]
+    # "MCParticleCollection": ["MCParticle"]
+    "MCParticleCollection": ["MCParticlesSkimmed"]
 }
 algList.append(truejet)
 
@@ -65,14 +87,14 @@ from Configurables import Lcio2EDM4hepTool
 lcioConvTool = Lcio2EDM4hepTool("lcio2EDM4hep")
 lcioConvTool.convertAll = True
 lcioConvTool.collNameMapping = {
-    "MCParticle": "MCParticles"
+    # "MCParticle": "MCParticles"
 }
 lcioConvTool.OutputLevel = WARNING
 # attach to the last non output processor
 truejet.Lcio2EDM4hepTool = lcioConvTool
 
 from Configurables import PodioOutput
-out = PodioOutput("PodioOutput", filename = f"{reco_args.outputBasename}_truejet.edm4hep.root")
+out = PodioOutput("PodioOutput", filename = f"{reco_args.outputBasename}.truejet.edm4hep.root")
 out.outputCommands = ["keep *"]
 algList.append(out)
 
