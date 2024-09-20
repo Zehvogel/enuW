@@ -1,13 +1,5 @@
 {
 
-// these three lines are essential, don't touch
-
-gInterpreter->AddIncludePath("$LCIO");
-gSystem->Load("${LCIO}/lib64/liblcio.so");
-gSystem->Load("${LCIO}/lib64/liblcioDict.so");
-
-// the stuff below you can adjust to your needs
-
 //ild TStyle
 TStyle* ildStyle = new  TStyle("ildStyle", "ILD Style");
 
