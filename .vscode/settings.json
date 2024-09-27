@@ -1,6 +1,7 @@
 {
     "files.associations": {
-        ".rootlogon.C": "cpp"
+        ".rootlogon.C": "cpp",
+        ".oldrootlogon.C": "cpp"
     },
     "cmake.ignoreCMakeListsMissing": true
 }
