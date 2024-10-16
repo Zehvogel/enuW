@@ -16,6 +16,7 @@ namespace OOTools {
     double mw() {return energy_.mw;}
     double mz() {return energy_.mz;}
 
+    // FIXME: only for the case where W- is leptonic
     double observ(double co, double co1, double co2, double ph1, double ph2, int formf, bool photon)
     {
         mode_.formf = formf;
