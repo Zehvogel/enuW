@@ -40,6 +40,50 @@ namespace OOTools {
     double fz6(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 6, false); }
     double fz7(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 7, false); }
 
+    double sw2()
+    {
+        return energy_.z;
+    }
+
+    double cw2()
+    {
+        return 1. - energy_.z;
+    }
+
+    // see convert.tex/.pdf
+    double abph(double co, double co1, double co2, double ph1, double ph2)
+    {
+        return -sw2() / cw2() * fz3(co, co1, co2, ph1, ph2) + fg3(co, co1, co2, ph1, ph2);
+    }
+
+    double awph(double co, double co1, double co2, double ph1, double ph2)
+    {
+        return 1. / cw2() * fz1(co, co1, co2, ph1, ph2) + (2.-sw2())/cw2() * fz3(co, co1, co2, ph1, ph2) + fg3(co, co1, co2, ph1, ph2);
+    }
+
+    double aw(double co, double co1, double co2, double ph1, double ph2)
+    {
+        return 2. * energy_.ga * energy_.ga * (fz1(co, co1, co2, ph1, ph2) + fg1(co, co1, co2, ph1, ph2))
+        + fz2(co, co1, co2, ph1, ph2) + fg2(co, co1, co2, ph1, ph2)
+        + fz3(co, co1, co2, ph1, ph2) + fg3(co, co1, co2, ph1, ph2);
+    }
+
+    // TODO: link where this is from...
+    double dg1z(double co, double co1, double co2, double ph1, double ph2)
+    {
+        return awph(co, co1, co2, ph1, ph2) / cw2();
+    }
+
+    double dkg(double co, double co1, double co2, double ph1, double ph2)
+    {
+        return awph(co, co1, co2, ph1, ph2) + abph(co, co1, co2, ph1, ph2);
+    }
+
+    double lz(double co, double co1, double co2, double ph1, double ph2)
+    {
+        return aw(co, co1, co2, ph1, ph2);
+    }
+
     void init(double sqrt_s, double mw = 80.22, double mz = 91.17)
     {
         energy_.mw = mw;
