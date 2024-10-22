@@ -8,7 +8,9 @@ extern "C"
 
     extern struct {double Pi;} pi_;
     extern struct {double mw; double mz; double z; double be; double ga; double xi;} energy_;
-    extern struct {int order; int formf; bool CPodd; bool absorptive; bool photon; bool Zbasis;} mode_;
+    extern struct {int order; int formf; int CPodd; int absorptive; int photon; int Zbasis;} mode_;
+    // extern struct __attribute__((packed)) {int order; int formf; bool CPodd; bool absorptive; bool photon; bool Zbasis;} mode_;
+    // extern struct __attribute__((packed)) {int order; int formf; unsigned int flags;} mode_;
 }
 
 namespace OOTools {
@@ -20,6 +22,7 @@ namespace OOTools {
     double observ(double co, double co1, double co2, double ph1, double ph2, int formf, bool photon)
     {
         mode_.formf = formf;
+        // FIXME
         mode_.photon = photon;
         return observ_(co, co1, co2, ph1, ph2);
     }
@@ -84,6 +87,29 @@ namespace OOTools {
         return aw(co, co1, co2, ph1, ph2);
     }
 
+    double test()
+    {
+        init_();
+        mode_.CPodd = true;
+        // mode_.CPodd = false; //debug
+        mode_.absorptive = false;
+        // mode_.photon = false; //debug
+        mode_.photon = true;
+        mode_.Zbasis = true;
+        // mode_.Zbasis = false; //debug
+        mode_.formf = 4;
+        // mode_.flags = -1;
+        double co = 5.54e-1;
+        double co1 = -2.35e-1;
+        double co2 = 9.97e-1;
+        double ph1 = 3.04;
+        double ph2 = -6.95;
+
+        return observ_(co, co1, co2, ph1, ph2);
+    }
+
+    // bool get_photon(){ return mode_.photon;}
+
     void init(double sqrt_s, double mw = 80.22, double mz = 91.17)
     {
         energy_.mw = mw;
@@ -99,5 +125,6 @@ namespace OOTools {
 
         mode_.absorptive = false; // don't worry about complex for now
         mode_.Zbasis = true;
+        mode_.CPodd = true; // does nothing
     }
 }
