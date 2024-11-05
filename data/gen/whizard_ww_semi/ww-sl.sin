@@ -1,0 +1,47 @@
+model = SM_ac
+#seed = 4711
+?isr_handler = false
+
+process ww = e1, E1 => Wp, Wm
+
+process Wp_decay = Wp => u, D
+process Wm_decay = Wm => e1, N1
+
+unstable Wp (Wp_decay)
+unstable Wm (Wm_decay)
+
+#luminosity = 10 #fb^-1
+n_events = 1000000
+#n_events = 10
+sqrts = 250
+
+iterations = 15:100000:"gw", 5:200000
+
+sample_format = lcio
+?unweighted = true
+
+#?write_raw = false
+
+compile
+integrate (ww)
+simulate (ww) {
+    alt_setup = {
+    g1z = 1.1
+    ka = 1.000
+    la = 0.000
+    kz = 1.0 - (ka - 1.0) * sw**2/cw**2 + (g1z - 1.0)
+    lz = la
+    }, {
+    g1z = 1.000
+    ka = 1.1
+    la = 0.000
+    kz = 1.0 - (ka - 1.0) * sw**2/cw**2 + (g1z - 1.0)
+    lz = la
+    }, {
+    g1z = 1.000
+    ka = 1.000
+    la = 0.1
+    kz = 1.0 - (ka - 1.0) * sw**2/cw**2 + (g1z - 1.0)
+    lz = la
+    }
+}
