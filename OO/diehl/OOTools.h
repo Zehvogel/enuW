@@ -4,6 +4,7 @@
 extern "C"
 {
     double observ_(double& co, double& co1, double& co2, double& ph1, double& ph2);
+    double proba_(double& si, double& co, double& si1, double& co1, double& si2, double& co2, double& ph1, double& ph2);
     void init_();
 
     extern struct {double Pi;} pi_;
@@ -18,13 +19,35 @@ namespace OOTools {
     double mw() {return energy_.mw;}
     double mz() {return energy_.mz;}
 
+    double proba(double co, double co1, double co2, double ph1, double ph2, int formf, bool photon, int order)
+    {
+        mode_.formf = formf;
+        mode_.photon = photon;
+        mode_.order = order;
+        double si = std::sqrt(1. - co*co);
+        double si1 = std::sqrt(1. - co1*co1);
+        double si2 = std::sqrt(1. - co2*co2);
+
+        double res = proba_(si, co, si1, co1, si2, co2, ph1, ph2);
+    }
+
     // FIXME: only for the case where W- is leptonic
+    // and for tagged quark charge
     double observ(double co, double co1, double co2, double ph1, double ph2, int formf, bool photon)
     {
         mode_.formf = formf;
         // FIXME
         mode_.photon = photon;
-        return observ_(co, co1, co2, ph1, ph2);
+        double si = std::sqrt(1. - co*co);
+        double si1 = std::sqrt(1. - co1*co1);
+        double si2 = std::sqrt(1. - co2*co2);
+
+        mode_.order = 0;
+        double res = proba_(si, co, si1, co1, si2, co2, ph1, ph2);
+
+        mode_.order = 1;
+        res /= proba_(si, co, si1, co1, si2, co2, ph1, ph2);
+
     }
 
     double fg1(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 1, true); }
