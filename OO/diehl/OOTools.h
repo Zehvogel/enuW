@@ -28,7 +28,73 @@ namespace OOTools {
         double si1 = std::sqrt(1. - co1*co1);
         double si2 = std::sqrt(1. - co2*co2);
 
-        double res = proba_(si, co, si1, co1, si2, co2, ph1, ph2);
+        return proba_(si, co, si1, co1, si2, co2, ph1, ph2);
+    }
+
+    double proba_sm(double co, double co1, double co2, double ph1, double ph2)
+    {
+        return proba(co, co1, co2, ph1, ph2, 0, true, 0);
+    }
+
+    double sw2()
+    {
+        return energy_.z;
+    }
+
+    double cw2()
+    {
+        return 1. - energy_.z;
+    }
+
+    // TODO: check? the couplings are linear combinations of each other so this should work??
+    // FIXME: this just cannot be correct!!!!
+    // technically the results of proba still need to be multiplied by the input value
+    // for the coupling f_i calculated backwards from an input value for the coupling a...
+    // etc...
+    // so I need the opposite of (19) in convert.pdf which should be recoverable from (18)
+    // but I am a bit confused with the (delta, x, y)_gamma
+    double proba_abph(double co, double co1, double co2, double ph1, double ph2)
+    {
+        double fz3 = proba(co, co1, co2, ph1, ph2, 3, false, 1);
+        double fg3 = proba(co, co1, co2, ph1, ph2, 3, true, 1);
+
+        return -sw2() / cw2() * fz3 + fg3;
+    }
+
+    double proba_awph(double co, double co1, double co2, double ph1, double ph2)
+    {
+        double fz1 = proba(co, co1, co2, ph1, ph2, 1, false, 1);
+        double fz3 = proba(co, co1, co2, ph1, ph2, 3, false, 1);
+        double fg3 = proba(co, co1, co2, ph1, ph2, 3, true, 1);
+
+        return 1 / cw2() * fz1 + (2 - sw2()) / cw2() * fz3 + fg3;
+    }
+
+    double proba_aw(double co, double co1, double co2, double ph1, double ph2)
+    {
+        double fz1 = proba(co, co1, co2, ph1, ph2, 1, false, 1);
+        double fz2 = proba(co, co1, co2, ph1, ph2, 2, false, 1);
+        double fz3 = proba(co, co1, co2, ph1, ph2, 3, false, 1);
+        double fg1 = proba(co, co1, co2, ph1, ph2, 1, true, 1);
+        double fg2 = proba(co, co1, co2, ph1, ph2, 2, true, 1);
+        double fg3 = proba(co, co1, co2, ph1, ph2, 3, true, 1);
+
+        return 2. * energy_.ga * energy_.ga * (fz1 + fg1) + fz2 + fg2 + fz3 + fg3;
+    }
+
+    double proba_dg1z(double co, double co1, double co2, double ph1, double ph2)
+    {
+        return proba_awph(co, co1, co2, ph1, ph2) / cw2();
+    }
+
+    double proba_dkg(double co, double co1, double co2, double ph1, double ph2)
+    {
+        return proba_awph(co, co1, co2, ph1, ph2) + proba_abph(co, co1, co2, ph1, ph2);
+    }
+
+    double proba_lz(double co, double co1, double co2, double ph1, double ph2)
+    {
+        return proba_aw(co, co1, co2, ph1, ph2);
     }
 
     // FIXME: only for the case where W- is leptonic
@@ -43,11 +109,16 @@ namespace OOTools {
         double si2 = std::sqrt(1. - co2*co2);
 
         mode_.order = 0;
-        double res = proba_(si, co, si1, co1, si2, co2, ph1, ph2);
+        // double res = proba_(si, co, si1, co1, si2, co2, ph1, ph2);
+        // necessary because the values are passed by reference to fortran...
+        double nco2 = -co2;
+        double ph2_pi = ph2 + pi_.Pi;
+        double res = proba_(si, co, si1, co1, si2, co2, ph1, ph2) + proba_(si, co, si1, co1, si2, nco2, ph1, ph2_pi);
 
         mode_.order = 1;
-        res /= proba_(si, co, si1, co1, si2, co2, ph1, ph2);
-
+        // res = proba_(si, co, si1, co1, si2, co2, ph1, ph2) / res;
+        res = (proba_(si, co, si1, co1, si2, co2, ph1, ph2) + proba_(si, co, si1, co1, si2, nco2, ph1, ph2_pi)) / res;
+        return res;
     }
 
     double fg1(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 1, true); }
@@ -65,16 +136,6 @@ namespace OOTools {
     double fz5(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 5, false); }
     double fz6(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 6, false); }
     double fz7(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 7, false); }
-
-    double sw2()
-    {
-        return energy_.z;
-    }
-
-    double cw2()
-    {
-        return 1. - energy_.z;
-    }
 
     // see convert.tex/.pdf
     double abph(double co, double co1, double co2, double ph1, double ph2)
