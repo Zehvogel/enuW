@@ -46,57 +46,6 @@ namespace OOTools {
         return 1. - energy_.z;
     }
 
-    // TODO: check? the couplings are linear combinations of each other so this should work??
-    // FIXME: this just cannot be correct!!!!
-    // technically the results of proba still need to be multiplied by the input value
-    // for the coupling f_i calculated backwards from an input value for the coupling a...
-    // etc...
-    // so I need the opposite of (19) in convert.pdf which should be recoverable from (18)
-    // but I am a bit confused with the (delta, x, y)_gamma
-    double proba_abph(double co, double co1, double co2, double ph1, double ph2)
-    {
-        double fz3 = proba(co, co1, co2, ph1, ph2, 3, false, 1);
-        double fg3 = proba(co, co1, co2, ph1, ph2, 3, true, 1);
-
-        return -sw2() / cw2() * fz3 + fg3;
-    }
-
-    double proba_awph(double co, double co1, double co2, double ph1, double ph2)
-    {
-        double fz1 = proba(co, co1, co2, ph1, ph2, 1, false, 1);
-        double fz3 = proba(co, co1, co2, ph1, ph2, 3, false, 1);
-        double fg3 = proba(co, co1, co2, ph1, ph2, 3, true, 1);
-
-        return 1 / cw2() * fz1 + (2 - sw2()) / cw2() * fz3 + fg3;
-    }
-
-    double proba_aw(double co, double co1, double co2, double ph1, double ph2)
-    {
-        double fz1 = proba(co, co1, co2, ph1, ph2, 1, false, 1);
-        double fz2 = proba(co, co1, co2, ph1, ph2, 2, false, 1);
-        double fz3 = proba(co, co1, co2, ph1, ph2, 3, false, 1);
-        double fg1 = proba(co, co1, co2, ph1, ph2, 1, true, 1);
-        double fg2 = proba(co, co1, co2, ph1, ph2, 2, true, 1);
-        double fg3 = proba(co, co1, co2, ph1, ph2, 3, true, 1);
-
-        return 2. * energy_.ga * energy_.ga * (fz1 + fg1) + fz2 + fg2 + fz3 + fg3;
-    }
-
-    double proba_dg1z(double co, double co1, double co2, double ph1, double ph2)
-    {
-        return proba_awph(co, co1, co2, ph1, ph2) / cw2();
-    }
-
-    double proba_dkg(double co, double co1, double co2, double ph1, double ph2)
-    {
-        return proba_awph(co, co1, co2, ph1, ph2) + proba_abph(co, co1, co2, ph1, ph2);
-    }
-
-    double proba_lz(double co, double co1, double co2, double ph1, double ph2)
-    {
-        return proba_aw(co, co1, co2, ph1, ph2);
-    }
-
     // FIXME: only for the case where W- is leptonic
     // and for tagged quark charge
     double observ(double co, double co1, double co2, double ph1, double ph2, int formf, bool photon)
@@ -104,8 +53,6 @@ namespace OOTools {
         mode_.formf = formf;
         // FIXME
         mode_.photon = photon;
-        // TODO: test effect and figure out if false here is also false in fortran...
-        mode_.absorptive = false;
         double si = std::sqrt(1. - co*co);
         double si1 = std::sqrt(1. - co1*co1);
         double si2 = std::sqrt(1. - co2*co2);
@@ -123,77 +70,54 @@ namespace OOTools {
         return res;
     }
 
-    double fg1(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 1, true); }
-    double fg2(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 2, true); }
-    double fg3(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 3, true); }
-    double fg4(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 4, true); }
-    double fg5(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 5, true); }
-    double fg6(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 6, true); }
-    double fg7(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 7, true); }
+    double O_fg1(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 1, true); }
+    double O_fg2(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 2, true); }
+    double O_fg3(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 3, true); }
+    double O_fg4(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 4, true); }
+    double O_fg5(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 5, true); }
+    double O_fg6(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 6, true); }
+    double O_fg7(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 7, true); }
 
-    double fz1(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 1, false); }
-    double fz2(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 2, false); }
-    double fz3(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 3, false); }
-    double fz4(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 4, false); }
-    double fz5(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 5, false); }
-    double fz6(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 6, false); }
-    double fz7(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 7, false); }
-
-    // conversions that I calculated myself from the Hagiwara 87 paper
-    double dg1z_new(double co, double co1, double co2, double ph1, double ph2)
-    {
-        // FIXME: check if -1 is needed...
-        // return fz1(co, co1, co2, ph1, ph2) - 2. * energy_.ga * energy_.ga * fz2(co, co1, co2, ph1, ph2) - 1.;
-        return fz1(co, co1, co2, ph1, ph2) - 2. * energy_.ga * energy_.ga * fz2(co, co1, co2, ph1, ph2);
-    }
-
-    double dkg_new(double co, double co1, double co2, double ph1, double ph2)
-    {
-        // FIXME: check if -1 is needed...
-        // return -fg1(co, co1, co2, ph1, ph2) * (2. * energy_.ga * energy_.ga - 1.) * fg2(co, co1, co2, ph1, ph2) + fg3(co, co1, co2, ph1, ph2) - 1.;
-        return -fg1(co, co1, co2, ph1, ph2) * (2. * energy_.ga * energy_.ga - 1.) * fg2(co, co1, co2, ph1, ph2) + fg3(co, co1, co2, ph1, ph2);
-    }
-
-    double lz_new(double co, double co1, double co2, double ph1, double ph2)
-    {
-        return fz2(co, co1, co2, ph1, ph2);
-    }
+    double O_fz1(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 1, false); }
+    double O_fz2(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 2, false); }
+    double O_fz3(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 3, false); }
+    double O_fz4(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 4, false); }
+    double O_fz5(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 5, false); }
+    double O_fz6(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 6, false); }
+    double O_fz7(double co, double co1, double co2, double ph1, double ph2) { return observ(co, co1, co2, ph1, ph2, 7, false); }
 
     // see convert.tex/.pdf
-    double abph(double co, double co1, double co2, double ph1, double ph2)
+    double O_abph(double co, double co1, double co2, double ph1, double ph2)
     {
-        return -sw2() / cw2() * fz3(co, co1, co2, ph1, ph2) + fg3(co, co1, co2, ph1, ph2);
+        return -sw2() / cw2() * O_fz3(co, co1, co2, ph1, ph2) + O_fg3(co, co1, co2, ph1, ph2);
     }
 
-    double awph(double co, double co1, double co2, double ph1, double ph2)
+    double O_awph(double co, double co1, double co2, double ph1, double ph2)
     {
-        return 1. / cw2() * fz1(co, co1, co2, ph1, ph2) + (2.-sw2())/cw2() * fz3(co, co1, co2, ph1, ph2) + fg3(co, co1, co2, ph1, ph2);
+        return 1. / cw2() * O_fz1(co, co1, co2, ph1, ph2) + (2.-sw2())/cw2() * O_fz3(co, co1, co2, ph1, ph2) + O_fg3(co, co1, co2, ph1, ph2);
     }
 
-    double aw(double co, double co1, double co2, double ph1, double ph2)
+    double O_aw(double co, double co1, double co2, double ph1, double ph2)
     {
-        return 2. * energy_.ga * energy_.ga * (fz1(co, co1, co2, ph1, ph2) + fg1(co, co1, co2, ph1, ph2))
-        + fz2(co, co1, co2, ph1, ph2) + fg2(co, co1, co2, ph1, ph2)
-        + fz3(co, co1, co2, ph1, ph2) + fg3(co, co1, co2, ph1, ph2);
+        return 2. * energy_.ga * energy_.ga * (O_fz1(co, co1, co2, ph1, ph2) + O_fg1(co, co1, co2, ph1, ph2))
+        + O_fz2(co, co1, co2, ph1, ph2) + O_fg2(co, co1, co2, ph1, ph2)
+        + O_fz3(co, co1, co2, ph1, ph2) + O_fg3(co, co1, co2, ph1, ph2);
     }
 
     // TODO: link where this is from...
-    // lol all of these were converted wrongly by me
-    double dg1z(double co, double co1, double co2, double ph1, double ph2)
+    double O_dg1z(double co, double co1, double co2, double ph1, double ph2)
     {
-        // return awph(co, co1, co2, ph1, ph2) / cw2();
-        return cw2() * awph(co, co1, co2, ph1, ph2) - cw2() * abph(co, co1, co2, ph1, ph2);
+        return cw2() * O_awph(co, co1, co2, ph1, ph2) - cw2() * O_abph(co, co1, co2, ph1, ph2);
     }
 
     double dkg(double co, double co1, double co2, double ph1, double ph2)
     {
-        // return awph(co, co1, co2, ph1, ph2) + abph(co, co1, co2, ph1, ph2);
-        return abph(co, co1, co2, ph1, ph2);
+        return O_abph(co, co1, co2, ph1, ph2);
     }
 
     double lz(double co, double co1, double co2, double ph1, double ph2)
     {
-        return aw(co, co1, co2, ph1, ph2);
+        return O_aw(co, co1, co2, ph1, ph2);
     }
 
     double test()
@@ -216,8 +140,6 @@ namespace OOTools {
 
         return observ_(co, co1, co2, ph1, ph2);
     }
-
-    // bool get_photon(){ return mode_.photon;}
 
     void init(double sqrt_s, double mw = 80.22, double mz = 91.17)
     {
