@@ -13,7 +13,7 @@ unstable Wm (Wm_decay)
 #luminosity = 10 #fb^-1
 n_events = 1000000
 #n_events = 10
-sqrts = 190
+sqrts = 240
 
 iterations = 15:100000:"gw", 5:200000
 
