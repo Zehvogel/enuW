@@ -10,8 +10,6 @@ extern "C"
     extern struct {double Pi;} pi_;
     extern struct {double mw; double mz; double z; double be; double ga; double xi;} energy_;
     extern struct {int order; int formf; int CPodd; int absorptive; int photon; int Zbasis;} mode_;
-    // extern struct __attribute__((packed)) {int order; int formf; bool CPodd; bool absorptive; bool photon; bool Zbasis;} mode_;
-    // extern struct __attribute__((packed)) {int order; int formf; unsigned int flags;} mode_;
 }
 
 namespace OOTools {
@@ -47,7 +45,6 @@ namespace OOTools {
     }
 
     // FIXME: only for the case where W- is leptonic
-    // and for tagged quark charge
     double observ(double co, double co1, double co2, double ph1, double ph2, int formf, bool photon)
     {
         mode_.formf = formf;
@@ -110,12 +107,12 @@ namespace OOTools {
         return cw2() * O_awph(co, co1, co2, ph1, ph2) - cw2() * O_abph(co, co1, co2, ph1, ph2);
     }
 
-    double dkg(double co, double co1, double co2, double ph1, double ph2)
+    double O_dkg(double co, double co1, double co2, double ph1, double ph2)
     {
         return O_abph(co, co1, co2, ph1, ph2);
     }
 
-    double lz(double co, double co1, double co2, double ph1, double ph2)
+    double O_lz(double co, double co1, double co2, double ph1, double ph2)
     {
         return O_aw(co, co1, co2, ph1, ph2);
     }
