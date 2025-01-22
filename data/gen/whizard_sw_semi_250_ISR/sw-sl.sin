@@ -1,0 +1,49 @@
+model = SM_ac
+#seed = 4711
+
+process ww = e1, E1 => u, D, e1, N1
+
+beams = e1, E1 => isr
+
+?isr_handler = true
+$isr_handler_mode = "recoil"
+isr_mass = 0.000511
+
+#luminosity = 10 #fb^-1
+n_events = 50000
+#n_events = 10
+sqrts = 250
+
+iterations = 10:10000:"gw", 5:20000:"gw", 5:40000
+
+sample_format = lcio
+?unweighted = true
+
+#?write_raw = false
+
+# 50 mrad cut, inner lumi cal cone so not visible anyway
+cuts = all abs (cos (Theta)) < cos (0.05 rad) [e1]
+
+compile
+integrate (ww)
+simulate (ww) {
+    alt_setup = {
+    g1z = 1.1
+    ka = 1.000
+    la = 0.000
+    kz = 1.0 - (ka - 1.0) * sw**2/cw**2 + (g1z - 1.0)
+    lz = la
+    }, {
+    g1z = 1.000
+    ka = 1.1
+    la = 0.000
+    kz = 1.0 - (ka - 1.0) * sw**2/cw**2 + (g1z - 1.0)
+    lz = la
+    }, {
+    g1z = 1.000
+    ka = 1.000
+    la = 0.1
+    kz = 1.0 - (ka - 1.0) * sw**2/cw**2 + (g1z - 1.0)
+    lz = la
+    }
+}
