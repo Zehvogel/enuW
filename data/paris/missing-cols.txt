@@ -1,0 +1,88 @@
+     BCalRecoParticle                                   ReconstructedParticle                             
+     TrueJetPFOLink                                     LCRelation[ReconstructedParticle,ReconstructedParticle]
+     Refined6Jets                                       ReconstructedParticle                             
+     Refined5Jets                                       ReconstructedParticle                             
+     Refined3Jets                                       ReconstructedParticle                             
+     PrimaryVertex_RP                                   ReconstructedParticle                             
+     PandoraPFOs                                        ReconstructedParticle                             
+     FinalColourNeutralLink                             LCRelation[ReconstructedParticle,ReconstructedParticle]
+     Refined2Jets                                       ReconstructedParticle                             
+     FinalColourNeutrals                                ReconstructedParticle                             
+     FinalElementonLink                                 LCRelation[ReconstructedParticle,MCParticle]      
+     IsolatedElectrons                                  ReconstructedParticle                             
+     PFOsWithoutMCOverlay                               ReconstructedParticle                             
+     IsolatedMuons                                      ReconstructedParticle                             
+     Refined4Jets                                       ReconstructedParticle                             
+     PrimaryVertex                                      Vertex                                            
+     InitialColourNeutralLink                           LCRelation[ReconstructedParticle,ReconstructedParticle]
+     TrueJetMCParticleLink                              LCRelation[ReconstructedParticle,MCParticle]      
+     InitialColourNeutrals                              ReconstructedParticle                             
+     InitialElementonLink                               LCRelation[ReconstructedParticle,MCParticle]      
+     IsolatedPhotons                                    ReconstructedParticle                             
+     IsolatedTaus                                       ReconstructedParticle                             
+     TrueJets                                           ReconstructedParticle                             
+     RecoMCTruthLink                                    LCRelation[ReconstructedParticle,MCParticle]      
+     MCParticlesSkimmed                                 MCParticle                                        
+     MCTruthRecoLink                                    LCRelation[MCParticle,ReconstructedParticle]      
+     PFOsFromOverlay                                    ReconstructedParticle                             
+TrueJetPID                                                  TrueJets|
+lcfiplus                                                  Refined6Jets|BTag,CTag,Category,OTag
+yth                                                  Refined6Jets|y01,y12,y23,y34,y45,y56,y67,y78,y89,y910
+RefinedVertex                                                  Refined6Jets|SingleVertexProbability
+lcfiplus                                                  Refined5Jets|BTag,CTag,Category,OTag
+yth                                                  Refined5Jets|y01,y12,y23,y34,y45,y56,y67,y78,y89,y910
+RefinedVertex                                                  Refined5Jets|SingleVertexProbability
+TrueJet_fafpi                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_00                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_01                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_02                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_03                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_04                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_05                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_06                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_07                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_08                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_10                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_11                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_12                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_13                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_14                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_15                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_16                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_17                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_18                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_19                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_20                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_21                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_22                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_23                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_24                                                  InitialColourNeutrals|
+TrueJet_fafpi_jet_9                                                  InitialColourNeutrals|
+lcfiplus                                                  Refined3Jets|BTag,CTag,Category,OTag
+yth                                                  Refined3Jets|y01,y12,y23,y34,y45,y56,y67,y78,y89,y910
+RefinedVertex                                                  Refined3Jets|SingleVertexProbability
+BasicVariablePID                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+BasicVariablePIDv2                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+LeptonID                                                  PandoraPFOs|mva_e,mva_mu,mva_had
+LikelihoodPID                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+LikelihoodPIDv2                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+LowMomMuID                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+LowMomMuIDv2                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+ShowerShapesPID                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+ShowerShapesPIDv2                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+TMVA_BDT_MC_12bins_singleP                                                  PandoraPFOs|11-ness,13-ness,211-ness,321-ness,2212-ness
+TOFEstimators0ps                                                  PandoraPFOs|TOFFirstHit,TOFClosestHits,TOFClosestHitsError,TOFFlightLength,TOFLastTrkHit,TOFLastTrkHitFlightLength
+TOFEstimators100ps                                                  PandoraPFOs|TOFFirstHit,TOFClosestHits,TOFClosestHitsError,TOFFlightLength,TOFLastTrkHit,TOFLastTrkHitFlightLength
+TOFEstimators10ps                                                  PandoraPFOs|TOFFirstHit,TOFClosestHits,TOFClosestHitsError,TOFFlightLength,TOFLastTrkHit,TOFLastTrkHitFlightLength
+TOFEstimators50ps                                                  PandoraPFOs|TOFFirstHit,TOFClosestHits,TOFClosestHitsError,TOFFlightLength,TOFLastTrkHit,TOFLastTrkHitFlightLength
+dEdxPID                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+dEdxPIDv2                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+TrueJet_fafpf                                                  FinalColourNeutrals|
+TrueJet_fafpf_jet_00                                                  FinalColourNeutrals|
+TrueJet_fafpf_jet_01                                                  FinalColourNeutrals|
+lcfiplus                                                  Refined2Jets|BTag,CTag,Category,OTag
+yth                                                  Refined2Jets|y01,y12,y23,y34,y45,y56,y67,y78,y89,y910
+RefinedVertex                                                  Refined2Jets|SingleVertexProbability
+lcfiplus                                                  Refined4Jets|BTag,CTag,Category,OTag
+yth                                                  Refined4Jets|y01,y12,y23,y34,y45,y56,y67,y78,y89,y910
+RefinedVertex                                                  Refined4Jets|SingleVertexProbability

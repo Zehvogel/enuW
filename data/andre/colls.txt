@@ -1,0 +1,46 @@
+     BCalRecoParticle                                   ReconstructedParticle                             
+     Refined6Jets                                       ReconstructedParticle                             
+     Refined5Jets                                       ReconstructedParticle                             
+     IsolatedElectrons                                  ReconstructedParticle                             
+     IsolatedMuons                                      ReconstructedParticle                             
+     IsolatedPhotons                                    ReconstructedParticle                             
+     PandoraPFOs                                        ReconstructedParticle                             
+     Refined2Jets                                       ReconstructedParticle                             
+     IsolatedTaus                                       ReconstructedParticle                             
+     PrimaryVertex_RP                                   ReconstructedParticle                             
+     PFOsminusphoton                                    ReconstructedParticle                             
+     Refined4Jets                                       ReconstructedParticle                             
+     PrimaryVertex                                      Vertex                                            
+     MCTruthRecoLink                                    LCRelation[MCParticle,ReconstructedParticle]      
+     MCParticlesSkimmed                                 MCParticle                                        
+     RecoMCTruthLink                                    LCRelation[ReconstructedParticle,MCParticle]      
+     Refined3Jets                                       ReconstructedParticle                             
+lcfiplus                                                  Refined6Jets|BTag,CTag,Category,OTag
+yth                                                  Refined6Jets|y01,y12,y23,y34,y45,y56,y67,y78,y89,y910
+RefinedVertex                                                  Refined6Jets|SingleVertexProbability
+lcfiplus                                                  Refined5Jets|BTag,CTag,Category,OTag
+yth                                                  Refined5Jets|y01,y12,y23,y34,y45,y56,y67,y78,y89,y910
+RefinedVertex                                                  Refined5Jets|SingleVertexProbability
+lcfiplus                                                  Refined3Jets|BTag,CTag,Category,OTag
+yth                                                  Refined3Jets|y01,y12,y23,y34,y45,y56,y67,y78,y89,y910
+RefinedVertex                                                  Refined3Jets|SingleVertexProbability
+lcfiplus                                                  Refined4Jets|BTag,CTag,Category,OTag
+yth                                                  Refined4Jets|y01,y12,y23,y34,y45,y56,y67,y78,y89,y910
+RefinedVertex                                                  Refined4Jets|SingleVertexProbability
+lcfiplus                                                  Refined2Jets|BTag,CTag,Category,OTag
+yth                                                  Refined2Jets|y01,y12,y23,y34,y45,y56,y67,y78,y89,y910
+RefinedVertex                                                  Refined2Jets|SingleVertexProbability
+BasicVariablePID                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+BasicVariablePIDv2                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+LikelihoodPID                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+LikelihoodPIDv2                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+LowMomMuID                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+LowMomMuIDv2                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+ShowerShapesPID                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+ShowerShapesPIDv2                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+TOFEstimators0ps                                                  PandoraPFOs|TOFFirstHit,TOFClosestHits,TOFClosestHitsError,TOFFlightLength,TOFLastTrkHit,TOFLastTrkHitFlightLength
+TOFEstimators100ps                                                  PandoraPFOs|TOFFirstHit,TOFClosestHits,TOFClosestHitsError,TOFFlightLength,TOFLastTrkHit,TOFLastTrkHitFlightLength
+TOFEstimators10ps                                                  PandoraPFOs|TOFFirstHit,TOFClosestHits,TOFClosestHitsError,TOFFlightLength,TOFLastTrkHit,TOFLastTrkHitFlightLength
+TOFEstimators50ps                                                  PandoraPFOs|TOFFirstHit,TOFClosestHits,TOFClosestHitsError,TOFFlightLength,TOFLastTrkHit,TOFLastTrkHitFlightLength
+dEdxPID                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
+dEdxPIDv2                                                  PandoraPFOs|electronLikelihood,muonLikelihood,pionLikelihood,kaonLikelihood,protonLikelihood,hadronLikelihood,MVAOutput_mupiSeparation,electronProbability,muonProbability,pionProbability,kaonProbability,protonProbability,hadronProbability,electron_dEdxdistance,muon_dEdxdistance,pion_dEdxdistance,kaon_dEdxdistance,proton_dEdxdistance
