@@ -1,0 +1,11 @@
+{
+    "samples": {
+        "test-sample": {
+            "trees": ["events"],
+            "files": [
+                "/eos/experiment/clicdp/data/user/l/lreichen/miniDST/2f/2f_leptonic/l5_o1/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500008.P2f_z_l.eR.pL.n163.d_dstm_15461_417_mini-DST.edm4hep.root",
+                "/eos/experiment/clicdp/data/user/l/lreichen/miniDST/2f/2f_leptonic/l5_o1/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500008.P2f_z_l.eR.pL.n163.d_dstm_15461_418_mini-DST.edm4hep.root"
+            ]
+        }
+    }
+}
