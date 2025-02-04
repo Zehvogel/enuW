@@ -1185,6 +1185,7 @@
 /eos/experiment/clicdp/data/user/l/lreichen/miniDST/ww_h_analysis/l5_o1/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500066.P4f_ww_h.eL.pR.n000.d_dstm_15155_8_mini-DST.edm4hep.root
 /eos/experiment/clicdp/data/user/l/lreichen/miniDST/ww_h_analysis/l5_o1/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500066.P4f_ww_h.eL.pR.n000.d_dstm_15155_9_mini-DST.edm4hep.root
 /eos/experiment/clicdp/data/user/l/lreichen/miniDST/ww_h_analysis/l5_o1/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500068.P4f_ww_h.eR.pL.n000.d_dstm_15128_0_mini-DST.edm4hep.root
+/eos/experiment/clicdp/data/user/l/lreichen/miniDST/ww_h_analysis/l5_o1/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500068.P4f_ww_h.eR.pL.n000.d_dstm_15128_1_mini-DST.edm4hep.root
 /eos/experiment/clicdp/data/user/l/lreichen/miniDST/ww_h_analysis/l5_o1/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500068.P4f_ww_h.eR.pL.n000.d_dstm_15128_2_mini-DST.edm4hep.root
 /eos/experiment/clicdp/data/user/l/lreichen/miniDST/ww_h_analysis/l5_o1/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500068.P4f_ww_h.eR.pL.n000.d_dstm_15128_3_mini-DST.edm4hep.root
 /eos/experiment/clicdp/data/user/l/lreichen/miniDST/ww_h_analysis/l5_o1/rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500068.P4f_ww_h.eR.pL.n000.d_dstm_15128_4_mini-DST.edm4hep.root
