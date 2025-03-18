@@ -1,7 +1,11 @@
 {
     "files.associations": {
         ".rootlogon.C": "cpp",
-        ".oldrootlogon.C": "cpp"
+        ".oldrootlogon.C": "cpp",
+        "concepts": "cpp",
+        "text_encoding": "cpp"
     },
-    "cmake.ignoreCMakeListsMissing": true
+    "cmake.ignoreCMakeListsMissing": true,
+    "C_Cpp.default.cppStandard": "c++20",
+    "fortran.fortls.disabled": true
 }

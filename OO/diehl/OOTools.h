@@ -104,17 +104,20 @@ namespace OOTools {
     // TODO: link where this is from...
     double O_dg1z(double co, double co1, double co2, double ph1, double ph2)
     {
-        return cw2() * O_awph(co, co1, co2, ph1, ph2) - cw2() * O_abph(co, co1, co2, ph1, ph2);
+        // return cw2() * O_awph(co, co1, co2, ph1, ph2) - cw2() * O_abph(co, co1, co2, ph1, ph2);
+        return O_fz1(co, co1, co2, ph1, ph2) + (1. + cw2()/sw2()) * O_fz3(co, co1, co2, ph1, ph2);
     }
 
     double O_dkg(double co, double co1, double co2, double ph1, double ph2)
     {
-        return O_abph(co, co1, co2, ph1, ph2);
+        // return O_abph(co, co1, co2, ph1, ph2);
+        return (1. - cw2()/sw2()) * O_fz3(co, co1, co2, ph1, ph2);
     }
 
     double O_lz(double co, double co1, double co2, double ph1, double ph2)
     {
-        return O_aw(co, co1, co2, ph1, ph2);
+        // return O_aw(co, co1, co2, ph1, ph2);
+        return 2 * energy_.ga * O_fz1(co, co1, co2, ph1, ph2) + O_fz2(co, co1, co2, ph1, ph2) + O_fz3(co, co1, co2, ph1, ph2);
     }
 
     double test()
