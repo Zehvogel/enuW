@@ -51,7 +51,7 @@ class Dataset:
     # we want to have something like {"process": {"pol: [path1, path2]"}}
     _dataset = defaultdict(lambda: defaultdict(list))
 
-    # TODO I want to be able to supply either a list or a file :/
+    # I want to be able to supply either a list or a file
     def __init__(self, input_path: str | list[str]):
         def process_lines(content):
             for line in content:
@@ -66,7 +66,7 @@ class Dataset:
             return TypeError
 
 
-    def process_path(self, path: str) -> str:
+    def process_path(self, path: str) -> tuple[str, str, str]:
         dir, _, fname = path.rpartition("/")
         # the mc-2020 filenames follow a certain fixed naming scheme, example:
         # rv02-02.sv02-02.mILD_l5_o1_v02.E250-SetA.I500102.P4f_sze_sl.eL.pR.n024.d_dstm_15180_122_mini-DST.edm4hep.root
@@ -99,20 +99,20 @@ class Dataset:
         return [f"{process_name}_{pol}" for process_name in self._dataset.keys() for pol in self._dataset[process_name].keys()]
 
 
-class SnapshotDataset(Dataset):
-    @override
-    def process_path(self, path: str) -> str:
-        # urgh here I relly made my life unnecessarily hard :(
-        # my snapshot names look like this:
-        # <category>_<process_name>_<pol>.snapshot.root
-        # where the first two can also contain '_' and pol doesn't...
-        # I can only split this under the assumption that the
-        # process name starts with either '<n>f' or matches '<any>h'
-        parts = path.split("_")
-        process_name = parts[5].lstrip("P")
-        e_pol = parts[6]
-        p_pol = parts[7]
-        return process_name, e_pol, p_pol
+# class SnapshotDataset(Dataset):
+#     @override
+#     def process_path(self, path: str) -> str:
+#         # urgh here I relly made my life unnecessarily hard :(
+#         # my snapshot names look like this:
+#         # <category>_<process_name>_<pol>.snapshot.root
+#         # where the first two can also contain '_' and pol doesn't...
+#         # I can only split this under the assumption that the
+#         # process name starts with either '<n>f' or matches '<any>h'
+#         parts = path.split("_")
+#         process_name = parts[5].lstrip("P")
+#         e_pol = parts[6]
+#         p_pol = parts[7]
+#         return process_name, e_pol, p_pol
 
 
 
@@ -316,7 +316,7 @@ class Analysis:
         names = list(list(self._df.values())[0].GetFilterNames())
         n_filters = len(names)
         # aggregate all the information
-        largest = 0
+        largest = 0.
         numbers = {}
         errors2 = {}
         for category_name, frames in self._categories.items():
