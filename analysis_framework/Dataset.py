@@ -22,6 +22,7 @@ class Dataset(ABC):
         pass
 
 
+
     @staticmethod
     @abstractmethod
     def _parse_path(path: str) -> str:
@@ -54,9 +55,28 @@ class Dataset(ABC):
         return json.dumps({"samples": res}, indent=indent)
 
 
-    @abstractmethod
-    def get_weight(self, process_name: str, int_lumi: float, *args, **kwargs) -> float:
-        return 0.
+    @staticmethod
+    def from_json(path: str):
+        with open(path) as file:
+            dataset = Dataset()
+            for name, content in json.load(file)["samples"].items():
+                sample = Dataset.Sample()
+                sample.trees = content["trees"]
+                sample.files = content["files"]
+                sample.metadata = content["metadata"]
+                dataset._dataset[name] = sample
+        return dataset
+
+
+    def get_weight(self, process_name, int_lumi: float, e_pol: float = 0., p_pol: float = 0.) -> float:
+        meta = self._dataset[process_name].metadata
+        process_e_pol = meta.get("e_pol", 0.)
+        process_p_pol = meta.get("p_pol", 0.)
+        pol_weight = 0.25 * (1.0 + e_pol * process_e_pol) * (1.0 + p_pol * process_p_pol)
+        n_events = meta["n_events"]
+        xsec = meta["xsec_fb"]
+        lumi_weight = int_lumi / (n_events / xsec)
+        return pol_weight * lumi_weight
 
 
     def get_samples(self) -> Generator[str, str, list[str]]:

@@ -94,17 +94,5 @@ class ILDMC2020Dataset(Dataset):
             meta["n_events"] += tree.GetEntries()
             # print(process_name, vars(dataset))
 
-
-    def get_weight(self, process_name, int_lumi, *args, **kwargs):
-        e_pol, p_pol = args
-        meta = self._dataset[process_name].metadata
-        process_e_pol = meta["e_pol"]
-        process_p_pol = meta["p_pol"]
-        pol_weight = 0.25 * (1.0 + e_pol * process_e_pol) * (1.0 + p_pol * process_p_pol)
-        n_events = meta["n_events"]
-        xsec = meta["xsec_fb"]
-        lumi_weight = int_lumi / (n_events / xsec)
-        return pol_weight * lumi_weight
-
     # TODO: what about the completeness check?
     # Implement this as an ILD specific method?
