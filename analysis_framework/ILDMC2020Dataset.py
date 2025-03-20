@@ -3,6 +3,7 @@ import json
 import ROOT
 from typing import Any
 from itertools import chain, filterfalse
+from multiprocessing import Pool
 
 def id_genrange():
     # the generator overlords have chosen these numbers...
