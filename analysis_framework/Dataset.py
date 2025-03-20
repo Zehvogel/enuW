@@ -5,9 +5,14 @@ from typing import Any, Generator
 class Dataset(ABC):
 
     class Sample:
-        trees: list[str] = ["events"]
-        files: list[str] = []
-        metadata: dict[str, Any] = {}
+        trees: list[str]
+        files: list[str]
+        metadata: dict[str, Any]
+
+        def __init__(self):
+            # FIXME: will need to make this settable by the dataset implementation
+            self.trees = ["events"]
+            self.files = []
 
     _dataset: dict[str, Sample] = {}
 
@@ -24,7 +29,7 @@ class Dataset(ABC):
 
 
     @abstractmethod
-    def _get_meta_for_process(self, process_name):
+    def _get_meta_for_process(self, process_name) -> dict[str, Any]:
         pass
 
 
@@ -42,11 +47,11 @@ class Dataset(ABC):
         self._dataset[process_name].files.append(path)
 
 
-    def to_json(self):
+    def to_json(self, indent: int = 0):
         res = {}
         for name, dataset in self._dataset.items():
             res[name] = vars(dataset)
-        return json.dumps({"samples": res})
+        return json.dumps({"samples": res}, indent=indent)
 
 
     @abstractmethod
