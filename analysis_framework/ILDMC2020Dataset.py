@@ -30,6 +30,7 @@ class ILDMC2020Dataset(Dataset):
     _name2id: dict[str, str] = {}
 
     def __init__(self, files: str | list[str], genmeta: str):
+        super().__init__()
         with open(genmeta) as meta_file:
             self._meta_dict = json.load(meta_file)
             for id in id_genrange():

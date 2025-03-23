@@ -3,6 +3,7 @@ import ROOT
 import re
 from typing import Any
 from .Backports import kP10
+from collections import deque
 
 
 class Analysis:
@@ -249,9 +250,10 @@ class Analysis:
 
 
     # FIXME: need to also write-out some metadata, especially the initial counts per process!
-    def book_snapshots(self, tree_name: str, out_dir: str, column_list = None, no_rvec = False):
+    def book_snapshots(self, tree_name: str, out_dir: str, meta_outname: str, column_list = None, no_rvec = False):
         """Will be written out when the event loop runs"""
         # Need to avoid double counting, either write out all non-suffixed dataframes or start from the categories
+        dataset = Dataset()
         categories = self._categories
         for category_name, frames in categories.items():
             for frame in frames:
@@ -272,3 +274,58 @@ class Analysis:
                     snapshot_options.fVector2RVec = False
                 args.append(snapshot_options)
                 self._snapshots[frame] = df.Snapshot(*args)
+                # now transfer metadata
+                # need to get metadata from before the signal definition cut for correct weight
+                old_frame = frame.removesuffix("_bkg").removesuffix("_signal")
+                *_, meta = self._dataset.get_sample(old_frame)
+                new_sample = ([tree_name], [file_name], meta)
+                dataset.add_sample(frame, *new_sample)
+        with open(meta_outname, "w") as out_file:
+            out_file.write(dataset.to_json())
+
+
+    def check_snapshots(self, tree_name: str, out_dir: str, meta_outname: str):
+        # repeat some of the logic of book snapshots: create a dataset but put only working files inside
+        # warn on broken files where the count after filtering is non-zero!
+        dataset = Dataset()
+        categories = self._categories
+        for category_name, frames in categories.items():
+            for frame in frames:
+                file_name = f"{out_dir}/{category_name}_{frame}.snapshot.root"
+
+                # TODO: check if file exists and contains the tree and has as many entries as expected
+                # first: check expected count
+                # we can take them from the cut reports
+                report = self._reports[frame]
+                # get the last cut
+                last_cut = deque(report, maxlen=1).pop()
+                expected_count = last_cut.GetPass()
+                try:
+                    with ROOT.TFile.Open(file_name) as file:
+                        try:
+                            tree = file[tree_name]
+                            written_count = tree.GetEntries()
+                            if written_count != expected_count:
+                                print(f"ERROR: unequal counts! written: {written_count} expected: {expected_count}")
+                                continue
+                        except KeyError:
+                            if expected_count > 0:
+                                print(f"ERROR: missing tree {tree_name} in {file_name}")
+                            else:
+                                print(f"INFO: missing tree {tree_name} but expected_count is zero in {file_name}")
+                            continue
+                except OSError:
+                    if expected_count > 0:
+                        print(f"ERROR: missing file {file_name} with {expected_count} expected events")
+                    else:
+                        print(f"INFO: missing empty file {file_name}")
+                    continue
+
+                # now transfer metadata
+                # need to get metadata from before the signal definition cut for correct weight
+                old_frame = frame.removesuffix("_bkg").removesuffix("_signal")
+                *_, meta = self._dataset.get_sample(old_frame)
+                new_sample = ([tree_name], [file_name], meta)
+                dataset.add_sample(frame, *new_sample)
+        with open(meta_outname, "w") as out_file:
+            out_file.write(dataset.to_json())

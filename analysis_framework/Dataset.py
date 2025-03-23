@@ -1,8 +1,7 @@
 import json
-from abc import ABC, abstractmethod
 from typing import Any, Generator
 
-class Dataset(ABC):
+class Dataset():
 
     class Sample:
         trees: list[str]
@@ -14,24 +13,33 @@ class Dataset(ABC):
             self.trees = ["events"]
             self.files = []
 
-    _dataset: dict[str, Sample] = {}
+    _dataset: dict[str, Sample]
 
 
-    @abstractmethod
     def __init__(self, *args):
-        pass
+        self._dataset = {}
 
+
+    def get_sample(self, name: str) -> tuple[list[str], list[str], dict[str, Any]]:
+        sample = self._dataset[name]
+        return sample.trees, sample.files, sample.metadata
+
+
+    def add_sample(self, name: str, trees: list[str], files: list[str], metadata: dict[str, Any]):
+        sample = self.Sample()
+        sample.trees = trees
+        sample.files = files
+        sample.metadata = metadata
+        self._dataset[name] = sample
 
 
     @staticmethod
-    @abstractmethod
     def _parse_path(path: str) -> str:
-        pass
+        raise RuntimeError
 
 
-    @abstractmethod
     def _get_meta_for_process(self, process_name) -> dict[str, Any]:
-        pass
+        raise RuntimeError
 
 
     def _add_process(self, process_name: str):
@@ -79,6 +87,7 @@ class Dataset(ABC):
         return pol_weight * lumi_weight
 
 
-    def get_samples(self) -> Generator[str, str, list[str]]:
+    def get_samples(self) -> Generator[tuple[str, str, list[str]], None, None]:
         for name, sample in self._dataset.items():
-            yield name, sample.trees[0], sample.files
+            yield (name, sample.trees[0], sample.files)
+        return None
