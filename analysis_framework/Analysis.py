@@ -27,6 +27,9 @@ class Analysis:
     def __init__(self, dataset: Dataset):
         self._dataset = dataset
         for name, tree_name, files in dataset.get_samples():
+            # filter out meta only
+            if tree_name == "" and files == [""]:
+                continue
             df = ROOT.RDataFrame(tree_name, files)
             self._df[name] = df
 
@@ -281,7 +284,7 @@ class Analysis:
                 new_sample = ([tree_name], [file_name], meta)
                 dataset.add_sample(frame, *new_sample)
         with open(meta_outname, "w") as out_file:
-            out_file.write(dataset.to_json())
+            out_file.write(dataset.to_json(indent=2))
 
 
     def check_snapshots(self, tree_name: str, out_dir: str, meta_outname: str):
@@ -327,5 +330,8 @@ class Analysis:
                 *_, meta = self._dataset.get_sample(old_frame)
                 new_sample = ([tree_name], [file_name], meta)
                 dataset.add_sample(frame, *new_sample)
+                # also add metadata for the uncut frame if needed
+                if frame != old_frame:
+                    dataset.add_sample(old_frame, [""], [""], meta)
         with open(meta_outname, "w") as out_file:
-            out_file.write(dataset.to_json())
+            out_file.write(dataset.to_json(indent=2))
