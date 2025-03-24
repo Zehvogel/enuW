@@ -1,5 +1,6 @@
 #pragma once
 #include <Math/Vector4D.h>
+#include <Math/Vector3D.h>
 #include <Math/GenVector/VectorUtil.h>
 
 namespace WWTools

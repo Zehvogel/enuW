@@ -42,6 +42,7 @@ class Analysis:
     def init_parameters(self, params: list[tuple[str, str, str]]):
         """Inits the podio generic parameters supplied as a list of (name, c++ typename, alternative value)"""
         ROOT.gInterpreter.Declare("#include <podio/GenericParameters.h>")
+        # FIXME: not usable in stage two like this because Parameters is already defined
         self.Define("Parameters", "podio::GenericParameters par; par.loadFrom(GPDoubleKeys, GPDoubleValues); par.loadFrom(GPFloatKeys, GPFloatValues); par.loadFrom(GPIntKeys, GPIntValues); par.loadFrom(GPStringKeys, GPStringValues); return par;")
         for p_name, p_type, p_alt in params:
             self.Define(f"params_{p_name.replace('.', '_')}", f"Parameters.get<{p_type}>(\"{p_name}\").value_or({p_alt})")
@@ -78,6 +79,7 @@ class Analysis:
                 # get histogram, clone it, scale it, put it in a list
                 h = histograms[k].Clone()
                 # our crossection table only knows about the full processes
+                # FIXME only do this step is needed!
                 weight_key = k.removesuffix("_signal").removesuffix("_bkg")
                 # FIXME, is now a method of the Dataset
                 weight = self._dataset.get_weight(weight_key, int_lumi, e_pol, p_pol)
@@ -114,14 +116,11 @@ class Analysis:
             self._booked_objects.append(report)
 
 
-    # TODO: adapt to use the new categories
-    def print_reports(self, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0):
-        """Print cut-flow report for each category/prefix"""
+    def _calc_cutflow(self, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0) -> tuple[dict[str, list[float]], dict[str, list[float]]]:
         # all processes should have the same *named* filters applied:
         names = list(list(self._df.values())[0].GetFilterNames())
         n_filters = len(names)
         # aggregate all the information
-        largest = 0.
         numbers = {}
         errors2 = {}
         for category_name, frames in self._categories.items():
@@ -131,6 +130,7 @@ class Analysis:
             for k in frames:
                 reports = self._reports[k]
                 weight_key = k
+                # FIXME only do this step is needed!
                 weight_key  = weight_key.removesuffix("_signal").removesuffix("_bkg")
                 weight = self._dataset.get_weight(weight_key, int_lumi, e_pol, p_pol)
                 for i, cut_info in enumerate(reports):
@@ -145,8 +145,45 @@ class Analysis:
             # print(nums)
             numbers[category_name] = nums
             errors2[category_name] = errs2
-            largest = max(largest, max(nums))
+        return numbers, errors2
 
+
+    def draw_cutflow(self, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0):
+        numbers, errors2 = self._calc_cutflow(int_lumi, e_pol, p_pol)
+        names = list(list(self._df.values())[0].GetFilterNames())
+        n_filters = len(names)
+        stack = ROOT.THStack()
+        legend = ROOT.TLegend(0.6, 0.7, 1., 1,)
+        for i, category_name in enumerate(self._categories):
+            h = ROOT.TH1D("", ";cut;events", n_filters+1, 0, n_filters+1)
+            nums = numbers[category_name]
+            for j, count in enumerate(nums):
+                h.Fill(j, count)
+            h.SetFillColor(kP10[i].GetNumber())
+            legend.AddEntry(h, category_name, "f")
+            stack.Add(h)
+        name = "cut flow"
+        legend.SetNColumns(2)
+        self._legends[name] = legend
+        self._stacks[name] = stack
+        canvas = ROOT.TCanvas()
+        self._canvases[name] = canvas
+        stack.SetTitle(f";{name}")
+        stack.Draw("hist")
+        x_axis = stack.GetXaxis()
+        for i, name in enumerate(["All"] + names):
+            x_axis.SetBinLabel(i+1, str(name))
+        legend.Draw()
+        canvas.Draw()
+        canvas.SetLogy()
+
+
+    # TODO: adapt to use the new categories
+    def print_reports(self, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0):
+        """Print cut-flow report for each category/prefix"""
+        numbers, errors2 = self._calc_cutflow(int_lumi, e_pol, p_pol)
+        largest = max([num for nums in numbers.values() for num in nums])
+        names = list(list(self._df.values())[0].GetFilterNames())
         # do the actual printing
         # TODO: just also give a fixed format for the yields like Teresa
         from math import log10, ceil, sqrt
@@ -215,6 +252,7 @@ class Analysis:
                         new_df = new_df.Filter(f"return !({cut});")
                 new_df_name = f"{df_name}_signal" if not background else f"{df_name}_bkg"
                 # print(f"creating {new_df_name} from {df_name} with background == {background}")
+                # FIXME: also add explicitly to dataset to be able to look up metadata!
                 self._df[new_df_name] = new_df
                 return new_df_name
 
@@ -331,6 +369,7 @@ class Analysis:
                 new_sample = ([tree_name], [file_name], meta)
                 dataset.add_sample(frame, *new_sample)
                 # also add metadata for the uncut frame if needed
+                # FIXME: remove this again once this is handled correctly during categorisation!
                 if frame != old_frame:
                     dataset.add_sample(old_frame, [""], [""], meta)
         with open(meta_outname, "w") as out_file:
