@@ -7,14 +7,14 @@ process ww = e1, E1 => u, D, e1, N1
 #luminosity = 10 #fb^-1
 n_events = 1000000
 #n_events = 10
-sqrts = 250
+sqrts = 190
 
-iterations = 15:10000:"gw", 5:20000
+iterations = 15:50000:"gw", 10:100000:"gw", 5:200000
 
 sample_format = lcio
 ?unweighted = true
 
-#?write_raw = false
+?write_raw = false
 
 # 50 mrad cut, inner lumi cal cone so not visible anyway
 cuts = all abs (cos (Theta)) < cos (0.05 rad) [e1]
