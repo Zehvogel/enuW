@@ -34,6 +34,7 @@ class Analysis:
             self._df[name] = df
 
 
+    # TODO: add a way to define only on specific categories
     def Define(self, *args):
         for k, df in self._df.items():
             self._df[k] = df.Define(*args)
