@@ -60,7 +60,7 @@ class Analysis:
 
 
     def book_sum(self, name: str, column: str):
-        self._sums[name] = self.book_some_method("Sum", column)
+        self._sums[name] = self.book_some_method("Sum", (column,))
 
 
     def book_histogram_1D(self, name: str, column: str, config: tuple):
@@ -104,7 +104,7 @@ class Analysis:
 
     def get_mean(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0, draw_opt: str = "hist"):
         weighted_counts, errors2 = self._calc_cutflow(int_lumi, e_pol, p_pol)
-        last_filter = weighted_counts.keys()[-1]
+        last_filter = list(weighted_counts.keys())[-1]
         counts = weighted_counts[last_filter]
         count = sum(counts)
         _sum = self.get_sum(name, int_lumi, e_pol, p_pol)

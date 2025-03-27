@@ -1,5 +1,6 @@
 from .Analysis import Analysis
 import ROOT
+import numpy as np
 
 
 def make_lvec_E(column: str, idx: str):
@@ -211,4 +212,20 @@ class WWAnalysis(Analysis):
         for i in range(1, 4):
             for j in range(1, 4):
                 self.Define(f"c_{i}{j}", f"O_{i} * O_{j}")
-        # TODO: finish implementation!
+                self.book_sum(f"c_{i}{j}", f"c_{i}{j}")
+                if self.truth_defined:
+                    self.Define(f"true_c_{i}{j}", f"true_O_{i} * true_O_{j}")
+                    self.book_sum(f"true_c_{i}{j}", f"true_c_{i}{j}")
+
+
+
+    def get_OO_matrix_normalized(self, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0):
+        values = [self.get_mean(f"c_{i}{j}", int_lumi, e_pol, p_pol) for i in range(1,4) for j in range(1,4)]
+        c = np.asarray(values).reshape((3, 3))
+        return c
+
+
+    def get_true_OO_matrix_normalized(self, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0):
+        values = [self.get_mean(f"true_c_{i}{j}", int_lumi, e_pol, p_pol) for i in range(1,4) for j in range(1,4)]
+        c = np.asarray(values).reshape((3, 3))
+        return c
