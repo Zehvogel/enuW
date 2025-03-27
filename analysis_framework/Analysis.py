@@ -12,6 +12,7 @@ class Analysis:
     _dataset: Dataset
     _df: dict[str, Any] = {}
     _histograms = {}
+    _sums = {}
     _stacks = {}
     _canvases = {}
     # need a place to "park" them somewhere as the THStacks do not take ownership :(
@@ -49,22 +50,68 @@ class Analysis:
             self.Define(f"params_{p_name.replace('.', '_')}", f"Parameters.get<{p_type}>(\"{p_name}\").value_or({p_alt})")
 
 
-    def book_histogram_1D(self, name: str, column: str, config: tuple):
-        histograms = {}
+    def book_some_method(self, method_name: str, args):
+        results = {}
         for k, df in self._df.items():
-            histo = df.Histo1D(config, column)
-            histograms[k] = histo
-            self._booked_objects.append(histo)
-        self._histograms[name] = histograms
+            res = getattr(df, method_name)(*args)
+            results[k] = res
+            self._booked_objects.append(res)
+        return results
 
 
-    # TODO: refactor, just have one global list of booked objects that gets run here
+    def book_sum(self, name: str, column: str):
+        self._sums[name] = self.book_some_method("Sum", column)
+
+
+    def book_histogram_1D(self, name: str, column: str, config: tuple):
+        self._histograms[name] = self.book_some_method("Histo1D", (config, column))
+        # histograms = {}
+        # for k, df in self._df.items():
+        #     histo = df.Histo1D(config, column)
+        #     histograms[k] = histo
+        #     self._booked_objects.append(histo)
+        # self._histograms[name] = histograms
+
+
+    def book_histogram_2D(self, name: str, column1: str, column2: str, config: tuple):
+        self._histograms[name] = self.book_some_method("Histo2D", (config, column1, column2))
+        # histograms = {}
+        # for k, df in self._df.items():
+        #     histo = df.Histo2D(config, column1, column2)
+        #     histograms[k] = histo
+        #     self._booked_objects.append(histo)
+        # self._histograms[name] = histograms
+
+
     def run(self):
         """Execute all booked computations"""
         ROOT.RDF.RunGraphs(self._booked_objects)
 
 
-    def draw_histogram(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0):
+    def get_sum(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0, draw_opt: str = "hist") -> float:
+        # ideally I could also make a functor that does this, but there is this
+        # additional issue that histograms need to be cloned and numbers not etc.
+        result = 0.
+        sums = self._sums[name]
+        for i, (category_name, dataframes) in enumerate(self._categories.items()):
+            for k in dataframes:
+                _sum = sums[k].GetValue()
+                weight_key = k.removesuffix("_signal").removesuffix("_bkg")
+                weight = self._dataset.get_weight(weight_key, int_lumi, e_pol, p_pol)
+                result += _sum * weight
+        return result
+
+
+    def get_mean(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0, draw_opt: str = "hist"):
+        weighted_counts, errors2 = self._calc_cutflow(int_lumi, e_pol, p_pol)
+        last_filter = weighted_counts.keys()[-1]
+        counts = weighted_counts[last_filter]
+        count = sum(counts)
+        _sum = self.get_sum(name, int_lumi, e_pol, p_pol)
+        return _sum / count
+
+
+    def draw_histogram(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0, draw_opt: str = "hist"):
         histograms = self._histograms[name]
         stack = ROOT.THStack()
         params = (name, int_lumi, e_pol, p_pol)
@@ -100,7 +147,7 @@ class Analysis:
         canvas = ROOT.TCanvas()
         self._canvases[params] = canvas
         stack.SetTitle(f";{name}")
-        stack.Draw("hist")
+        stack.Draw(draw_opt)
         legend.Draw()
         canvas.Draw()
 

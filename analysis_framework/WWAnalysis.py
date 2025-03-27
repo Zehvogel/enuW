@@ -2,9 +2,36 @@ from .Analysis import Analysis
 import ROOT
 
 
+def make_lvec_E(column: str, idx: str):
+    return f"""
+    ROOT::Math::PxPyPzEVector(
+        {column}.momentum.x[{idx}],
+        {column}.momentum.y[{idx}],
+        {column}.momentum.z[{idx}],
+        {column}.energy[{idx}]
+    )
+    """
+
+
+def make_lvec_M(column: str, idx: str):
+    return f"""
+    ROOT::Math::PxPyPzMVector(
+        {column}.momentum.x[{idx}],
+        {column}.momentum.y[{idx}],
+        {column}.momentum.z[{idx}],
+        {column}.mass[{idx}]
+    )
+    """
+
+
 class WWAnalysis(Analysis):
+
+    truth_defined: bool
+
     def __init__(self, dataset):
+        self.truth_defined = False
         super().__init__(dataset)
+
 
 
     def define_reco_objects(self, x_angle: float):
@@ -41,7 +68,15 @@ class WWAnalysis(Analysis):
         # print(boost2(s_lvec))
         # print(boost2(e_lvec))
         ROOT.gInterpreter.Declare(f"ROOT::Math::BoostX unboost_xangle(-std::sin({x_angle/2}));")
-        lvec_list = ["iso_lep_lvec", "jet1_lvec", "jet2_lvec", "hadronic_W_lvec", "leptonic_W_lvec", "nu_lvec"]
+        lvec_list = [
+            "iso_lep_lvec", "jet1_lvec", "jet2_lvec",
+            "hadronic_W_lvec", "leptonic_W_lvec", "nu_lvec"
+            ]
+        if self.truth_defined:
+            lvec_list += [
+                "true_lep_lvec", "true_nu_lvec", "true_quark1_lvec", "true_quark2_lvec",
+                "true_leptonic_W_lvec", "true_hadronic_W_lvec"
+                ]
         for lvec in lvec_list:
             self.Define(f"ub_{lvec}", f"unboost_xangle({lvec})")
 
@@ -63,21 +98,27 @@ class WWAnalysis(Analysis):
         # they literally did not put a cheaper cosTheta accessor into Genvectors...
         self.Define("Wm_cosTheta", "cos(Wm_lvec.Theta())")
 
-        # need to distinguish: f == fermion child of W-, fbar == anti-fermion child of W+
-        # i.e. Wm == W_lep -> f = iso_lep, fbar = not determinable, need to fold quarks
-        # i.e. Wm == W_had -> fbar = nu, f = not determinable, need to fold quarks
-        # so I could make the quark stuff into vectors so that the histograms work but I would also have to divide by two
-        # or I make both histograms, add them and then divide by two
-
         ROOT.gInterpreter.Declare("#include <WWTools.h>")
-        # let's act like we are in W_lep == Wm case to proceed
         self.Define("iso_lep_star_lvec", "WWTools::starVectorHagiwara(ub_leptonic_W_lvec, ub_iso_lep_lvec, {0, 0, 1}, Wm_lvec)")
         self.Define("nu_star_lvec", "WWTools::starVectorHagiwara(ub_leptonic_W_lvec, ub_nu_lvec, {0, 0, 1}, Wm_lvec)")
 
         self.Define("jet1_star_lvec", "WWTools::starVectorHagiwara(ub_hadronic_W_lvec, ub_jet1_lvec, {0, 0, 1}, Wm_lvec)")
         self.Define("jet2_star_lvec", "WWTools::starVectorHagiwara(ub_hadronic_W_lvec, ub_jet2_lvec, {0, 0, 1}, Wm_lvec)")
 
-        for lvec in ["iso_lep", "nu", "jet1", "jet2"]:
+        lvec_list = ["iso_lep", "nu", "jet1", "jet2"]
+
+        if self.truth_defined:
+            self.Define("true_Wm_lvec", "true_iso_lep_charge < 0. ? ub_true_leptonic_W_lvec : ub_true_hadronic_W_lvec")
+            self.Define("true_Wp_lvec", "true_iso_lep_charge > 0. ? ub_true_leptonic_W_lvec : ub_true_hadronic_W_lvec")
+            self.Define("true_Wm_cosTheta", "cos(true_Wm_lvec.Theta())")
+
+            self.Define("true_iso_lep_star_lvec", "WWTools::starVectorHagiwara(ub_true_leptonic_W_lvec, ub_true_lep_lvec, {0, 0, 1}, true_Wm_lvec)")
+            self.Define("true_nu_star_lvec", "WWTools::starVectorHagiwara(ub_true_leptonic_W_lvec, ub_true_nu_lvec, {0, 0, 1}, true_Wm_lvec)")
+            self.Define("true_jet1_star_lvec", "WWTools::starVectorHagiwara(ub_true_hadronic_W_lvec, ub_true_quark1_lvec, {0, 0, 1}, true_Wm_lvec)")
+            self.Define("true_jet2_star_lvec", "WWTools::starVectorHagiwara(ub_true_hadronic_W_lvec, ub_true_quark2_lvec, {0, 0, 1}, true_Wm_lvec)")
+            lvec_list += ["true_iso_lep", "true_nu", "true_jet1", "true_jet2"]
+
+        for lvec in lvec_list:
             self.Define(f"{lvec}_co", f"cos({lvec}_star_lvec.Theta())")
             self.Define(f"{lvec}_ph", f"{lvec}_star_lvec.Phi()")
 
@@ -101,10 +142,10 @@ class WWAnalysis(Analysis):
         }
         """)
 
-        self.Define("S_0",   f"iso_lep_charge < 0. ? proba_fold_Wp(co, iso_lep_co, jet1_co, jet2_co, iso_lep_ph, jet1_ph, jet2_ph, 0, 0) : proba_fold_Wm(co, jet1_co, jet2_co, nu_co, jet1_ph, jet2_ph, nu_ph, 0, 0)")
-        self.Define("S_1_1",   f"iso_lep_charge < 0. ? proba_fold_Wp(co, iso_lep_co, jet1_co, jet2_co, iso_lep_ph, jet1_ph, jet2_ph, 1, 1) : proba_fold_Wm(co, jet1_co, jet2_co, nu_co, jet1_ph, jet2_ph, nu_ph, 1, 1)")
-        self.Define("S_1_2",   f"iso_lep_charge < 0. ? proba_fold_Wp(co, iso_lep_co, jet1_co, jet2_co, iso_lep_ph, jet1_ph, jet2_ph, 2, 1) : proba_fold_Wm(co, jet1_co, jet2_co, nu_co, jet1_ph, jet2_ph, nu_ph, 2, 1)")
-        self.Define("S_1_3",   f"iso_lep_charge < 0. ? proba_fold_Wp(co, iso_lep_co, jet1_co, jet2_co, iso_lep_ph, jet1_ph, jet2_ph, 3, 1) : proba_fold_Wm(co, jet1_co, jet2_co, nu_co, jet1_ph, jet2_ph, nu_ph, 3, 1)")
+        self.Define("S_0",   "iso_lep_charge < 0. ? proba_fold_Wp(co, iso_lep_co, jet1_co, jet2_co, iso_lep_ph, jet1_ph, jet2_ph, 0, 0) : proba_fold_Wm(co, jet1_co, jet2_co, nu_co, jet1_ph, jet2_ph, nu_ph, 0, 0)")
+        self.Define("S_1_1", "iso_lep_charge < 0. ? proba_fold_Wp(co, iso_lep_co, jet1_co, jet2_co, iso_lep_ph, jet1_ph, jet2_ph, 1, 1) : proba_fold_Wm(co, jet1_co, jet2_co, nu_co, jet1_ph, jet2_ph, nu_ph, 1, 1)")
+        self.Define("S_1_2", "iso_lep_charge < 0. ? proba_fold_Wp(co, iso_lep_co, jet1_co, jet2_co, iso_lep_ph, jet1_ph, jet2_ph, 2, 1) : proba_fold_Wm(co, jet1_co, jet2_co, nu_co, jet1_ph, jet2_ph, nu_ph, 2, 1)")
+        self.Define("S_1_3", "iso_lep_charge < 0. ? proba_fold_Wp(co, iso_lep_co, jet1_co, jet2_co, iso_lep_ph, jet1_ph, jet2_ph, 3, 1) : proba_fold_Wm(co, jet1_co, jet2_co, nu_co, jet1_ph, jet2_ph, nu_ph, 3, 1)")
 
         self.Define("O_1", "S_1_1 / S_0")
         self.Define("O_2", "S_1_2 / S_0")
@@ -113,3 +154,61 @@ class WWAnalysis(Analysis):
         # for debug
         self.Define("co1", "iso_lep_charge < 0. ? iso_lep_co : -iso_lep_co")
         self.Define("ph1", "iso_lep_charge < 0. ? iso_lep_ph : iso_lep_ph + ROOT::Math::Pi() <= ROOT::Math::Pi() ? iso_lep_ph + ROOT::Math::Pi() : iso_lep_ph - ROOT::Math::Pi()")
+
+        if self.truth_defined:
+            self.Define("true_co", "true_Wm_cosTheta")
+            self.Define("true_S_0",   "true_iso_lep_charge < 0. ? proba_fold_Wp(true_co, true_iso_lep_co, true_jet1_co, true_jet2_co, true_iso_lep_ph, true_jet1_ph, true_jet2_ph, 0, 0) : proba_fold_Wm(true_co, true_jet1_co, true_jet2_co, true_nu_co, true_jet1_ph, true_jet2_ph, true_nu_ph, 0, 0)")
+            for i in range(1, 4):
+                self.Define(f"true_S_1_{i}", f"true_iso_lep_charge < 0. ? proba_fold_Wp(true_co, true_iso_lep_co, true_jet1_co, true_jet2_co, true_iso_lep_ph, true_jet1_ph, true_jet2_ph, {i}, 1) : proba_fold_Wm(true_co, true_jet1_co, true_jet2_co, true_nu_co, true_jet1_ph, true_jet2_ph, true_nu_ph, {i}, 1)")
+                self.Define(f"true_O_{i}", f"true_S_1_{i} / true_S_0")
+            # for debug
+            self.Define("true_co1", "true_iso_lep_charge < 0. ? true_iso_lep_co : -true_iso_lep_co")
+            self.Define("true_ph1", "true_iso_lep_charge < 0. ? true_iso_lep_ph : true_iso_lep_ph + ROOT::Math::Pi() <= ROOT::Math::Pi() ? true_iso_lep_ph + ROOT::Math::Pi() : true_iso_lep_ph - ROOT::Math::Pi()")
+
+
+    def define_truth_objects(self):
+        # take first genstat 1 e and nu and first two gen stat 2 pdg below 6
+        def first_stable(abs_pdg):
+            return f"""
+            auto& genStat = MCParticlesSkimmed.generatorStatus;
+            auto& pdg = MCParticlesSkimmed.PDG;
+            auto mask = genStat == 1 && abs(pdg) == {abs_pdg};
+            // abuse ArgMax to get the first set position
+            auto idx = ArgMax(mask);
+            return idx;
+            """
+        def first_two_unstable_below(abs_pdg):
+            return f"""
+            auto& genStat = MCParticlesSkimmed.generatorStatus;
+            auto& pdg = MCParticlesSkimmed.PDG;
+            auto mask = genStat == 2 && abs(pdg) < {abs_pdg};
+            // abuse ArgMax to get the first set position
+            auto idx = ArgMax(mask);
+            // Drop the first index and use ArgMax again
+            auto idx2 = ArgMax(Drop(mask, {{idx}}));
+            // increment by one to compensate for removal of the first
+            idx2++;
+            return ROOT::VecOps::RVec({{idx, idx2}});
+            """
+        # FIXME: this selection will return over optimistic results as it will compare the MC electron after FSR with the reconstructed one
+        # making the reconstructed one appear less wrong than it is, more correct for the purpose of OO would be to take it directly after the ME calc
+        self.Define("true_lep_idx", first_stable(11))
+        self.Define("true_nu_idx", first_stable(12))
+        self.Define("true_quarks_idcs", first_two_unstable_below(6))
+        self.Define("true_quark1_idx", "true_quarks_idcs[0]")
+        self.Define("true_quark2_idx", "true_quarks_idcs[1]")
+        self.Define("true_lep_lvec", make_lvec_M("MCParticlesSkimmed", "true_lep_idx"))
+        self.Define("true_nu_lvec", make_lvec_M("MCParticlesSkimmed", "true_nu_idx"))
+        self.Define("true_quark1_lvec", make_lvec_M("MCParticlesSkimmed", "true_quark1_idx"))
+        self.Define("true_quark2_lvec", make_lvec_M("MCParticlesSkimmed", "true_quark2_idx"))
+        self.Define("true_leptonic_W_lvec", "true_lep_lvec + true_nu_lvec")
+        self.Define("true_hadronic_W_lvec", "true_quark1_lvec + true_quark2_lvec")
+        self.Define("true_iso_lep_charge", "MCParticlesSkimmed.PDG[true_lep_idx] > 0. ? -1. : 1.")
+        self.truth_defined = True
+
+
+    def book_OO_matrix(self):
+        for i in range(1, 4):
+            for j in range(1, 4):
+                self.Define(f"c_{i}{j}", f"O_{i} * O_{j}")
+        # TODO: finish implementation!
