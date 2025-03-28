@@ -28,9 +28,11 @@ def make_lvec_M(column: str, idx: str):
 class WWAnalysis(Analysis):
 
     truth_defined: bool
+    truth_categories: list[str]
 
     def __init__(self, dataset):
         self.truth_defined = False
+        self.truth_categories = []
         super().__init__(dataset)
 
 
@@ -73,13 +75,15 @@ class WWAnalysis(Analysis):
             "iso_lep_lvec", "jet1_lvec", "jet2_lvec",
             "hadronic_W_lvec", "leptonic_W_lvec", "nu_lvec"
             ]
+        for lvec in lvec_list:
+            self.Define(f"ub_{lvec}", f"unboost_xangle({lvec})")
         if self.truth_defined:
-            lvec_list += [
+            truth_lvec_list = [
                 "true_lep_lvec", "true_nu_lvec", "true_quark1_lvec", "true_quark2_lvec",
                 "true_leptonic_W_lvec", "true_hadronic_W_lvec"
                 ]
-        for lvec in lvec_list:
-            self.Define(f"ub_{lvec}", f"unboost_xangle({lvec})")
+            for lvec in truth_lvec_list:
+                self.define_only_on(self.truth_categories, f"ub_{lvec}", f"unboost_xangle({lvec})")
 
 
     def define_hagiwara_angles(self):
@@ -107,21 +111,24 @@ class WWAnalysis(Analysis):
         self.Define("jet2_star_lvec", "WWTools::starVectorHagiwara(ub_hadronic_W_lvec, ub_jet2_lvec, {0, 0, 1}, Wm_lvec)")
 
         lvec_list = ["iso_lep", "nu", "jet1", "jet2"]
-
-        if self.truth_defined:
-            self.Define("true_Wm_lvec", "true_iso_lep_charge < 0. ? ub_true_leptonic_W_lvec : ub_true_hadronic_W_lvec")
-            self.Define("true_Wp_lvec", "true_iso_lep_charge > 0. ? ub_true_leptonic_W_lvec : ub_true_hadronic_W_lvec")
-            self.Define("true_Wm_cosTheta", "cos(true_Wm_lvec.Theta())")
-
-            self.Define("true_iso_lep_star_lvec", "WWTools::starVectorHagiwara(ub_true_leptonic_W_lvec, ub_true_lep_lvec, {0, 0, 1}, true_Wm_lvec)")
-            self.Define("true_nu_star_lvec", "WWTools::starVectorHagiwara(ub_true_leptonic_W_lvec, ub_true_nu_lvec, {0, 0, 1}, true_Wm_lvec)")
-            self.Define("true_jet1_star_lvec", "WWTools::starVectorHagiwara(ub_true_hadronic_W_lvec, ub_true_quark1_lvec, {0, 0, 1}, true_Wm_lvec)")
-            self.Define("true_jet2_star_lvec", "WWTools::starVectorHagiwara(ub_true_hadronic_W_lvec, ub_true_quark2_lvec, {0, 0, 1}, true_Wm_lvec)")
-            lvec_list += ["true_iso_lep", "true_nu", "true_jet1", "true_jet2"]
-
         for lvec in lvec_list:
             self.Define(f"{lvec}_co", f"cos({lvec}_star_lvec.Theta())")
             self.Define(f"{lvec}_ph", f"{lvec}_star_lvec.Phi()")
+
+        if self.truth_defined:
+            self.define_only_on(self.truth_categories, "true_Wm_lvec", "true_iso_lep_charge < 0. ? ub_true_leptonic_W_lvec : ub_true_hadronic_W_lvec")
+            self.define_only_on(self.truth_categories, "true_Wp_lvec", "true_iso_lep_charge > 0. ? ub_true_leptonic_W_lvec : ub_true_hadronic_W_lvec")
+            self.define_only_on(self.truth_categories, "true_Wm_cosTheta", "cos(true_Wm_lvec.Theta())")
+
+            self.define_only_on(self.truth_categories, "true_iso_lep_star_lvec", "WWTools::starVectorHagiwara(ub_true_leptonic_W_lvec, ub_true_lep_lvec, {0, 0, 1}, true_Wm_lvec)")
+            self.define_only_on(self.truth_categories, "true_nu_star_lvec", "WWTools::starVectorHagiwara(ub_true_leptonic_W_lvec, ub_true_nu_lvec, {0, 0, 1}, true_Wm_lvec)")
+            self.define_only_on(self.truth_categories, "true_jet1_star_lvec", "WWTools::starVectorHagiwara(ub_true_hadronic_W_lvec, ub_true_quark1_lvec, {0, 0, 1}, true_Wm_lvec)")
+            self.define_only_on(self.truth_categories, "true_jet2_star_lvec", "WWTools::starVectorHagiwara(ub_true_hadronic_W_lvec, ub_true_quark2_lvec, {0, 0, 1}, true_Wm_lvec)")
+            truth_lvec_list = ["true_iso_lep", "true_nu", "true_jet1", "true_jet2"]
+            for lvec in truth_lvec_list:
+                self.define_only_on(self.truth_categories, f"{lvec}_co", f"cos({lvec}_star_lvec.Theta())")
+                self.define_only_on(self.truth_categories, f"{lvec}_ph", f"{lvec}_star_lvec.Phi()")
+
 
 
     def define_OO(self):
@@ -157,17 +164,17 @@ class WWAnalysis(Analysis):
         self.Define("ph1", "iso_lep_charge < 0. ? iso_lep_ph : iso_lep_ph + ROOT::Math::Pi() <= ROOT::Math::Pi() ? iso_lep_ph + ROOT::Math::Pi() : iso_lep_ph - ROOT::Math::Pi()")
 
         if self.truth_defined:
-            self.Define("true_co", "true_Wm_cosTheta")
-            self.Define("true_S_0",   "true_iso_lep_charge < 0. ? proba_fold_Wp(true_co, true_iso_lep_co, true_jet1_co, true_jet2_co, true_iso_lep_ph, true_jet1_ph, true_jet2_ph, 0, 0) : proba_fold_Wm(true_co, true_jet1_co, true_jet2_co, true_nu_co, true_jet1_ph, true_jet2_ph, true_nu_ph, 0, 0)")
+            self.define_only_on(self.truth_categories, "true_co", "true_Wm_cosTheta")
+            self.define_only_on(self.truth_categories, "true_S_0",   "true_iso_lep_charge < 0. ? proba_fold_Wp(true_co, true_iso_lep_co, true_jet1_co, true_jet2_co, true_iso_lep_ph, true_jet1_ph, true_jet2_ph, 0, 0) : proba_fold_Wm(true_co, true_jet1_co, true_jet2_co, true_nu_co, true_jet1_ph, true_jet2_ph, true_nu_ph, 0, 0)")
             for i in range(1, 4):
-                self.Define(f"true_S_1_{i}", f"true_iso_lep_charge < 0. ? proba_fold_Wp(true_co, true_iso_lep_co, true_jet1_co, true_jet2_co, true_iso_lep_ph, true_jet1_ph, true_jet2_ph, {i}, 1) : proba_fold_Wm(true_co, true_jet1_co, true_jet2_co, true_nu_co, true_jet1_ph, true_jet2_ph, true_nu_ph, {i}, 1)")
-                self.Define(f"true_O_{i}", f"true_S_1_{i} / true_S_0")
+                self.define_only_on(self.truth_categories, f"true_S_1_{i}", f"true_iso_lep_charge < 0. ? proba_fold_Wp(true_co, true_iso_lep_co, true_jet1_co, true_jet2_co, true_iso_lep_ph, true_jet1_ph, true_jet2_ph, {i}, 1) : proba_fold_Wm(true_co, true_jet1_co, true_jet2_co, true_nu_co, true_jet1_ph, true_jet2_ph, true_nu_ph, {i}, 1)")
+                self.define_only_on(self.truth_categories, f"true_O_{i}", f"true_S_1_{i} / true_S_0")
             # for debug
-            self.Define("true_co1", "true_iso_lep_charge < 0. ? true_iso_lep_co : -true_iso_lep_co")
-            self.Define("true_ph1", "true_iso_lep_charge < 0. ? true_iso_lep_ph : true_iso_lep_ph + ROOT::Math::Pi() <= ROOT::Math::Pi() ? true_iso_lep_ph + ROOT::Math::Pi() : true_iso_lep_ph - ROOT::Math::Pi()")
+            self.define_only_on(self.truth_categories, "true_co1", "true_iso_lep_charge < 0. ? true_iso_lep_co : -true_iso_lep_co")
+            self.define_only_on(self.truth_categories, "true_ph1", "true_iso_lep_charge < 0. ? true_iso_lep_ph : true_iso_lep_ph + ROOT::Math::Pi() <= ROOT::Math::Pi() ? true_iso_lep_ph + ROOT::Math::Pi() : true_iso_lep_ph - ROOT::Math::Pi()")
 
 
-    def define_truth_objects(self):
+    def define_truth_objects(self, categories: list[str]):
         # take first genstat 1 e and nu and first two gen stat 2 pdg below 6
         def first_stable(abs_pdg):
             return f"""
@@ -193,19 +200,35 @@ class WWAnalysis(Analysis):
             """
         # FIXME: this selection will return over optimistic results as it will compare the MC electron after FSR with the reconstructed one
         # making the reconstructed one appear less wrong than it is, more correct for the purpose of OO would be to take it directly after the ME calc
-        self.Define("true_lep_idx", first_stable(11))
-        self.Define("true_nu_idx", first_stable(12))
-        self.Define("true_quarks_idcs", first_two_unstable_below(6))
-        self.Define("true_quark1_idx", "true_quarks_idcs[0]")
-        self.Define("true_quark2_idx", "true_quarks_idcs[1]")
-        self.Define("true_lep_lvec", make_lvec_M("MCParticlesSkimmed", "true_lep_idx"))
-        self.Define("true_nu_lvec", make_lvec_M("MCParticlesSkimmed", "true_nu_idx"))
-        self.Define("true_quark1_lvec", make_lvec_M("MCParticlesSkimmed", "true_quark1_idx"))
-        self.Define("true_quark2_lvec", make_lvec_M("MCParticlesSkimmed", "true_quark2_idx"))
-        self.Define("true_leptonic_W_lvec", "true_lep_lvec + true_nu_lvec")
-        self.Define("true_hadronic_W_lvec", "true_quark1_lvec + true_quark2_lvec")
-        self.Define("true_iso_lep_charge", "MCParticlesSkimmed.PDG[true_lep_idx] > 0. ? -1. : 1.")
+        if not categories:
+            self.Define("true_lep_idx", first_stable(11))
+            self.Define("true_nu_idx", first_stable(12))
+            self.Define("true_quarks_idcs", first_two_unstable_below(6))
+            self.Define("true_quark1_idx", "true_quarks_idcs[0]")
+            self.Define("true_quark2_idx", "true_quarks_idcs[1]")
+            self.Define("true_lep_lvec", make_lvec_M("MCParticlesSkimmed", "true_lep_idx"))
+            self.Define("true_nu_lvec", make_lvec_M("MCParticlesSkimmed", "true_nu_idx"))
+            self.Define("true_quark1_lvec", make_lvec_M("MCParticlesSkimmed", "true_quark1_idx"))
+            self.Define("true_quark2_lvec", make_lvec_M("MCParticlesSkimmed", "true_quark2_idx"))
+            self.Define("true_leptonic_W_lvec", "true_lep_lvec + true_nu_lvec")
+            self.Define("true_hadronic_W_lvec", "true_quark1_lvec + true_quark2_lvec")
+            self.Define("true_iso_lep_charge", "MCParticlesSkimmed.PDG[true_lep_idx] > 0. ? -1. : 1.")
+        else:
+            self.define_only_on(categories, "true_lep_idx", first_stable(11))
+            self.define_only_on(categories, "true_nu_idx", first_stable(12))
+            self.define_only_on(categories, "true_quarks_idcs", first_two_unstable_below(6))
+            self.define_only_on(categories, "true_quark1_idx", "true_quarks_idcs[0]")
+            self.define_only_on(categories, "true_quark2_idx", "true_quarks_idcs[1]")
+            self.define_only_on(categories, "true_lep_lvec", make_lvec_M("MCParticlesSkimmed", "true_lep_idx"))
+            self.define_only_on(categories, "true_nu_lvec", make_lvec_M("MCParticlesSkimmed", "true_nu_idx"))
+            self.define_only_on(categories, "true_quark1_lvec", make_lvec_M("MCParticlesSkimmed", "true_quark1_idx"))
+            self.define_only_on(categories, "true_quark2_lvec", make_lvec_M("MCParticlesSkimmed", "true_quark2_idx"))
+            self.define_only_on(categories, "true_leptonic_W_lvec", "true_lep_lvec + true_nu_lvec")
+            self.define_only_on(categories, "true_hadronic_W_lvec", "true_quark1_lvec + true_quark2_lvec")
+            self.define_only_on(categories, "true_iso_lep_charge", "MCParticlesSkimmed.PDG[true_lep_idx] > 0. ? -1. : 1.")
+
         self.truth_defined = True
+        self.truth_categories = categories
 
 
     def book_OO_matrix(self):
@@ -214,8 +237,8 @@ class WWAnalysis(Analysis):
                 self.Define(f"c_{i}{j}", f"O_{i} * O_{j}")
                 self.book_sum(f"c_{i}{j}", f"c_{i}{j}")
                 if self.truth_defined:
-                    self.Define(f"true_c_{i}{j}", f"true_O_{i} * true_O_{j}")
-                    self.book_sum(f"true_c_{i}{j}", f"true_c_{i}{j}")
+                    self.define_only_on(self.truth_categories, f"true_c_{i}{j}", f"true_O_{i} * true_O_{j}")
+                    self.book_sum(f"true_c_{i}{j}", f"true_c_{i}{j}", categories=self.truth_categories)
 
 
 

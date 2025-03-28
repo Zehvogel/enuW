@@ -41,6 +41,14 @@ class Analysis:
             self._df[k] = df.Define(*args)
 
 
+    def define_only_on(self, categories: list[str], *args):
+        for category_name in categories:
+            category = self._categories[category_name]
+            for df_name in category:
+                df = self._df[df_name]
+                self._df[df_name] = df.Define(*args)
+
+
     def init_parameters(self, params: list[tuple[str, str, str]]):
         """Inits the podio generic parameters supplied as a list of (name, c++ typename, alternative value)"""
         ROOT.gInterpreter.Declare("#include <podio/GenericParameters.h>")
@@ -50,37 +58,37 @@ class Analysis:
             self.Define(f"params_{p_name.replace('.', '_')}", f"Parameters.get<{p_type}>(\"{p_name}\").value_or({p_alt})")
 
 
-    def book_some_method(self, method_name: str, args):
+    def _get_frames(self, categories: list[str]|None):
+        if not categories:
+            for k, df in self._df.items():
+                yield k, df
+        else:
+            for category_name in categories:
+                category = self._categories[category_name]
+                for df_name in category:
+                    df = self._df[df_name]
+                    yield df_name, df
+
+
+    def book_some_method(self, method_name: str, args, categories: list[str]|None = None):
         results = {}
-        for k, df in self._df.items():
+        for k, df in self._get_frames(categories):
             res = getattr(df, method_name)(*args)
             results[k] = res
             self._booked_objects.append(res)
         return results
 
 
-    def book_sum(self, name: str, column: str):
-        self._sums[name] = self.book_some_method("Sum", (column,))
+    def book_sum(self, name: str, column: str, categories: list[str]|None = None):
+        self._sums[name] = self.book_some_method("Sum", (column,), categories)
 
 
-    def book_histogram_1D(self, name: str, column: str, config: tuple):
-        self._histograms[name] = self.book_some_method("Histo1D", (config, column))
-        # histograms = {}
-        # for k, df in self._df.items():
-        #     histo = df.Histo1D(config, column)
-        #     histograms[k] = histo
-        #     self._booked_objects.append(histo)
-        # self._histograms[name] = histograms
+    def book_histogram_1D(self, name: str, column: str, config: tuple, categories: list[str]|None = None):
+        self._histograms[name] = self.book_some_method("Histo1D", (config, column), categories)
 
 
-    def book_histogram_2D(self, name: str, column1: str, column2: str, config: tuple):
-        self._histograms[name] = self.book_some_method("Histo2D", (config, column1, column2))
-        # histograms = {}
-        # for k, df in self._df.items():
-        #     histo = df.Histo2D(config, column1, column2)
-        #     histograms[k] = histo
-        #     self._booked_objects.append(histo)
-        # self._histograms[name] = histograms
+    def book_histogram_2D(self, name: str, column1: str, column2: str, config: tuple, categories: list[str]|None = None):
+        self._histograms[name] = self.book_some_method("Histo2D", (config, column1, column2), categories)
 
 
     def run(self):
@@ -88,7 +96,8 @@ class Analysis:
         ROOT.RDF.RunGraphs(self._booked_objects)
 
 
-    def get_sum(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0, draw_opt: str = "hist") -> float:
+    # TODO: extend to allow to select categories
+    def get_sum(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0) -> float:
         # ideally I could also make a functor that does this, but there is this
         # additional issue that histograms need to be cloned and numbers not etc.
         result = 0.
@@ -102,7 +111,8 @@ class Analysis:
         return result
 
 
-    def get_mean(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0, draw_opt: str = "hist"):
+    # TODO: extend to allow to select categories
+    def get_mean(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0) -> float:
         weighted_counts, errors2 = self._calc_cutflow(int_lumi, e_pol, p_pol)
         last_filter = list(weighted_counts.keys())[-1]
         counts = weighted_counts[last_filter]
@@ -111,7 +121,7 @@ class Analysis:
         return _sum / count
 
 
-    def draw_histogram(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0, draw_opt: str = "hist"):
+    def draw_histogram(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0, draw_opt: str = "hist", categories: list[str]|None = None):
         histograms = self._histograms[name]
         stack = ROOT.THStack()
         params = (name, int_lumi, e_pol, p_pol)
@@ -119,10 +129,13 @@ class Analysis:
         legend = ROOT.TLegend(0.6, 0.7, 1., 1,)
         # FIXME draw by category and use one color for each, just in the order of definition
         for i, (category_name, dataframes) in enumerate(self._categories.items()):
-            scaled_cat_histograms = []
+            if categories and category_name not in categories:
+                # skip
+                continue
             if len(dataframes) == 0:
                 # nothing to do for empty categories
                 continue
+            scaled_cat_histograms = []
             for k in dataframes:
                 # get histogram, clone it, scale it, put it in a list
                 h = histograms[k].Clone()
