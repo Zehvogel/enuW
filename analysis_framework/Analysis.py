@@ -163,6 +163,7 @@ class Analysis:
         stack.Draw(draw_opt)
         legend.Draw()
         canvas.Draw()
+        return stack, legend, canvas
 
 
     def add_filter(self, expression: str, name: str):
