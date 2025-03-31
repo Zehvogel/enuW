@@ -23,6 +23,8 @@ class Analysis:
     _categories: dict[str, list[str]] = {}
     _snapshots = {}
     _booked_objects: list[Any] = []
+    _arrows = {}
+    _lines = {}
 
 
     def __init__(self, dataset: Dataset):
@@ -121,7 +123,7 @@ class Analysis:
         return _sum / count
 
 
-    def draw_histogram(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0, draw_opt: str = "hist", categories: list[str]|None = None):
+    def draw_histogram(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0, draw_opt: str = "hist", categories: list[str]|None = None, logY: bool = False, plot_dir: str|None = None, x_arrowl: float|None = None, x_arrowr: float|None = None):
         histograms = self._histograms[name]
         stack = ROOT.THStack()
         params = (name, int_lumi, e_pol, p_pol)
@@ -159,10 +161,36 @@ class Analysis:
         self._stacks[params] = stack
         canvas = ROOT.TCanvas()
         self._canvases[params] = canvas
-        stack.SetTitle(f";{name}")
+        stack.SetTitle(f";{name};events")
         stack.Draw(draw_opt)
         legend.Draw()
+        y_max = stack.GetMaximum()
+        x_length = abs(stack.GetXaxis().GetXmax() - stack.GetXaxis().GetXmin())
+        if x_arrowr:
+            x1 = x_arrowr
+            x2 = x1 - 0.05 * x_length
+            y = 0.9 * y_max
+            arrowr = ROOT.TArrow(x2, y, x1, y, 0.025, "<")
+            arrowr.Draw()
+            self._arrows[(params, "r")] = arrowr
+            liner = ROOT.TLine(x1, 0, x1, y)
+            liner.Draw()
+            self._lines[(params, "r")] = liner
+        if x_arrowl:
+            x1 = x_arrowl
+            x2 = x1 + 0.05 * x_length
+            y = 0.9 * y_max
+            arrowl = ROOT.TArrow(x1, y, x2, y, 0.025, ">")
+            arrowl.Draw()
+            self._arrows[(params, "l")] = arrowl
+            linel = ROOT.TLine(x1, 0, x1, y)
+            linel.Draw()
+            self._lines[(params, "l")] = linel
+        if logY:
+            canvas.SetLogy()
         canvas.Draw()
+        if plot_dir:
+            canvas.SaveAs(f"{plot_dir}/{params}.pdf")
         return stack, legend, canvas
 
 
@@ -210,14 +238,14 @@ class Analysis:
         return numbers, errors2
 
 
-    def draw_cutflow(self, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0):
+    def draw_cutflow(self, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0, plot_dir: str|None = None):
         numbers, errors2 = self._calc_cutflow(int_lumi, e_pol, p_pol)
         names = list(list(self._df.values())[0].GetFilterNames())
         n_filters = len(names)
         stack = ROOT.THStack()
         legend = ROOT.TLegend(0.6, 0.7, 1., 1,)
         for i, category_name in enumerate(self._categories):
-            h = ROOT.TH1D("", ";cut;events", n_filters+1, 0, n_filters+1)
+            h = ROOT.TH1D("", "", n_filters+1, 0, n_filters+1)
             nums = numbers[category_name]
             for j, count in enumerate(nums):
                 h.Fill(j, count)
@@ -225,19 +253,23 @@ class Analysis:
             legend.AddEntry(h, category_name, "f")
             stack.Add(h)
         name = "cut flow"
+        params = (name, int_lumi, e_pol, p_pol)
         legend.SetNColumns(2)
-        self._legends[name] = legend
-        self._stacks[name] = stack
+        self._legends[params] = legend
+        self._stacks[params] = stack
         canvas = ROOT.TCanvas()
-        self._canvases[name] = canvas
-        stack.SetTitle(f";{name}")
+        self._canvases[params] = canvas
+        stack.SetTitle(";;events")
         stack.Draw("hist")
         x_axis = stack.GetXaxis()
         for i, name in enumerate(["All"] + names):
             x_axis.SetBinLabel(i+1, str(name))
         legend.Draw()
-        canvas.Draw()
         canvas.SetLogy()
+        canvas.Draw()
+        if plot_dir:
+            canvas.SaveAs(f"{plot_dir}/{params}.pdf")
+        # canvas.SetPadBottomMargin(0.3)
 
 
     # TODO: adapt to use the new categories
