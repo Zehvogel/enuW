@@ -69,7 +69,7 @@ ildStyle->SetPadTickX(1);
 ildStyle->SetPadTickY(1);
 
 //turn off stats
-ildStyle->SetOptStat(1);
+ildStyle->SetOptStat(0);
 ildStyle->SetOptFit(0);
 
 //marker settings
