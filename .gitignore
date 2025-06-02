@@ -50,3 +50,8 @@ ild_whizard_example/
 **/py.py
 **/MG5_debug
 *.lhe
+
+*.pyc
+FitExampleEFT/
+data/gen/mg5_standalone_test/
+data/gen/ILD_whizard*

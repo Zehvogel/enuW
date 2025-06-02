@@ -37,7 +37,6 @@ class Analysis:
             self._df[name] = df
 
 
-    # TODO: add a way to define only on specific categories
     def Define(self, *args):
         for k, df in self._df.items():
             self._df[k] = df.Define(*args)
@@ -51,13 +50,21 @@ class Analysis:
                 self._df[df_name] = df.Define(*args)
 
 
+    def col_exists(self, col_name: str) -> bool:
+        # take first df as all have the same
+        cols = list(self._df.values())[0].GetColumnNames()
+        return col_name in cols
+
+
     def init_parameters(self, params: list[tuple[str, str, str]]):
-        """Inits the podio generic parameters supplied as a list of (name, c++ typename, alternative value)"""
+        """Inits the podio generic parameters supplied as a list of (name, c++ typename, alternative value). If parameters were already initialised in a previous step, only the missing ones are added."""
         ROOT.gInterpreter.Declare("#include <podio/GenericParameters.h>")
-        # FIXME: not usable in stage two like this because Parameters is already defined
-        self.Define("Parameters", "podio::GenericParameters par; par.loadFrom(GPDoubleKeys, GPDoubleValues); par.loadFrom(GPFloatKeys, GPFloatValues); par.loadFrom(GPIntKeys, GPIntValues); par.loadFrom(GPStringKeys, GPStringValues); return par;")
+        if not self.col_exists("Parameters"):
+            self.Define("Parameters", "podio::GenericParameters par; par.loadFrom(GPDoubleKeys, GPDoubleValues); par.loadFrom(GPFloatKeys, GPFloatValues); par.loadFrom(GPIntKeys, GPIntValues); par.loadFrom(GPStringKeys, GPStringValues); return par;")
         for p_name, p_type, p_alt in params:
-            self.Define(f"params_{p_name.replace('.', '_')}", f"Parameters.get<{p_type}>(\"{p_name}\").value_or({p_alt})")
+            par_col_name = f"params_{p_name.replace('.', '_')}"
+            if not self.col_exists(par_col_name):
+                self.Define(par_col_name, f"Parameters.get<{p_type}>(\"{p_name}\").value_or({p_alt})")
 
 
     def _get_frames(self, categories: list[str]|None):
@@ -99,6 +106,7 @@ class Analysis:
 
 
     # TODO: extend to allow to select categories
+    # TODO: reconsider if this is needed
     def get_sum(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0) -> float:
         # ideally I could also make a functor that does this, but there is this
         # additional issue that histograms need to be cloned and numbers not etc.
@@ -114,6 +122,7 @@ class Analysis:
 
 
     # TODO: extend to allow to select categories
+    # TODO: reconsider if this is needed
     def get_mean(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0) -> float:
         weighted_counts, errors2 = self._calc_cutflow(int_lumi, e_pol, p_pol)
         last_filter = list(weighted_counts.keys())[-1]
@@ -123,13 +132,23 @@ class Analysis:
         return _sum / count
 
 
+    # TODO: add also storage of raw histograms and a way to read them back in for mixing
+    def store_histograms(self, variable_names: list[str], output_path: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0):
+        with ROOT.TFile(f"{output_path}/histograms_{int_lumi}_{e_pol}_{p_pol}.root", "recreate") as output_file:
+            for name in variable_names:
+                params = (name, int_lumi, e_pol, p_pol)
+                for cat_name, h in self._scaled_histograms[params].items():
+                    h.Write(f"h_{name}_{cat_name}")
+
+
+
     def draw_histogram(self, name: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0, draw_opt: str = "hist", categories: list[str]|None = None, logY: bool = False, plot_dir: str|None = None, x_arrowl: float|None = None, x_arrowr: float|None = None):
         histograms = self._histograms[name]
         stack = ROOT.THStack()
         params = (name, int_lumi, e_pol, p_pol)
         self._scaled_histograms[params] = {}
         legend = ROOT.TLegend(0.6, 0.7, 1., 1,)
-        # FIXME draw by category and use one color for each, just in the order of definition
+        # FIXME: put the calculation of the histograms into a separate method and only calculate them here if needed
         for i, (category_name, dataframes) in enumerate(self._categories.items()):
             if categories and category_name not in categories:
                 # skip
@@ -384,10 +403,9 @@ class Analysis:
         return len(df_names) == 0
 
 
-    # FIXME: need to also write-out some metadata, especially the initial counts per process!
     def book_snapshots(self, tree_name: str, out_dir: str, meta_outname: str, column_list = None, no_rvec = False):
         """Will be written out when the event loop runs"""
-        # Need to avoid double counting, either write out all non-suffixed dataframes or start from the categories
+        # Need to avoid double counting, write out all non-suffixed dataframes or start from the categories
         dataset = Dataset()
         categories = self._categories
         for category_name, frames in categories.items():

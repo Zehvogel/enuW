@@ -83,7 +83,7 @@ class Dataset():
         pol_weight = 0.25 * (1.0 + e_pol * process_e_pol) * (1.0 + p_pol * process_p_pol)
         n_events = meta["n_events"]
         xsec = meta["xsec_fb"]
-        lumi_weight = int_lumi / (n_events / xsec)
+        lumi_weight = int_lumi * (xsec / n_events)
         return pol_weight * lumi_weight
 
 
