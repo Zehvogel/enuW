@@ -1,6 +1,8 @@
-from .Analysis import Analysis
+from analysis_framework.Analysis import Analysis
 import ROOT
 import numpy as np
+from OO.whizard.model_parser import ModelParser
+import subprocess
 
 
 def make_lvec_E(column: str, idx: str):
@@ -29,12 +31,14 @@ class WWAnalysis(Analysis):
 
     truth_defined: bool
     truth_categories: list[str]
+    _omega_wrappers = {}
+    _mc_indices = {}
+    _signal_categories: list[str]
 
     def __init__(self, dataset):
         self.truth_defined = False
         self.truth_categories = []
         super().__init__(dataset)
-
 
 
     def define_reco_objects(self, x_angle: float):
@@ -252,3 +256,91 @@ class WWAnalysis(Analysis):
         values = [self.get_mean(f"true_c_{i}{j}", int_lumi, e_pol, p_pol) for i in range(1,4) for j in range(1,4)]
         c = np.asarray(values).reshape((3, 3))
         return c
+
+
+    def initialise_omega_wrappers(self, configurations: dict[str,dict[str, float]]):
+
+        whizard_prefix = subprocess.run(['whizard-config', '--prefix'], capture_output=True, encoding='ascii').stdout.strip()
+        whizard_libs = f"{whizard_prefix}/lib/"
+        # print(whizard_libs)
+        ROOT.gSystem.AddDynamicPath(whizard_libs)
+        ROOT.gSystem.Load("libwhizard.so")
+        ROOT.gSystem.Load("libwhizard_main.so")
+        ROOT.gSystem.Load("libomega.so")
+        ROOT.gSystem.Load("OO/whizard/cc20_ac_inclusive/.libs/default_lib.so")
+        ROOT.gInterpreter.Declare("#include \"OO/whizard/OmegaWrapper.h\"")
+
+        model_parser = ModelParser("OO/whizard/SM_ac.mdl")
+        # add derivation of lz and kz according to lep parametrisation
+        model_parser.add_derived_parameter("lz", "la")
+        model_parser.add_derived_parameter("kz", "1.0 - (ka - 1.0) * sw**2/cw**2 + (g1z - 1.0)")
+        self._omega_wrappers["nominal"] = ROOT.OmegaWrapper(model_parser.get_parameters_list())
+
+        for name, pars in configurations.items():
+            model_parser.set_parameters(pars)
+            self._omega_wrappers[name] = ROOT.OmegaWrapper(model_parser.get_parameters_list())
+
+
+    def set_mc_indices(self, indices: dict[str, int]):
+        self._mc_indices = indices
+
+
+    def set_signal_categories(self, categories: list[str]):
+        self._signal_categories = categories
+
+
+    def calc_reco_sqme(self):
+        self.Define("reco_ME_flv", "iso_lep_charge > 0 ? 1 : 2")
+        self.Define("reco_ME_momenta_12", """
+            std::vector<double>({
+                    125., 0., 0., 125.,
+                    125., 0., 0., -125.,
+                    ub_iso_lep_lvec.E(), ub_iso_lep_lvec.Px(), ub_iso_lep_lvec.Py(), ub_iso_lep_lvec.Pz(),
+                    ub_nu_lvec.E(), ub_nu_lvec.Px(), ub_nu_lvec.Py(), ub_nu_lvec.Pz(),
+                    ub_jet1_lvec.E(), ub_jet1_lvec.Px(), ub_jet1_lvec.Py(), ub_jet1_lvec.Pz(),
+                    ub_jet2_lvec.E(), ub_jet2_lvec.Px(), ub_jet2_lvec.Py(), ub_jet2_lvec.Pz(),
+            })
+        """)
+        self.Define("reco_ME_momenta_21", """
+            std::vector<double>({
+                    125., 0., 0., 125.,
+                    125., 0., 0., -125.,
+                    ub_iso_lep_lvec.E(), ub_iso_lep_lvec.Px(), ub_iso_lep_lvec.Py(), ub_iso_lep_lvec.Pz(),
+                    ub_nu_lvec.E(), ub_nu_lvec.Px(), ub_nu_lvec.Py(), ub_nu_lvec.Pz(),
+                    ub_jet2_lvec.E(), ub_jet2_lvec.Px(), ub_jet2_lvec.Py(), ub_jet2_lvec.Pz(),
+                    ub_jet1_lvec.E(), ub_jet1_lvec.Px(), ub_jet1_lvec.Py(), ub_jet1_lvec.Pz(),
+            })
+        """)
+        for name, omw in self._omega_wrappers.items():
+            self.Define(f"reco_sqme_12_{name}", omw, ["reco_ME_momenta_12", "reco_ME_flv"])
+            self.Define(f"reco_sqme_21_{name}", omw, ["reco_ME_momenta_21", "reco_ME_flv"])
+
+
+    # FIXME: urgh only do all this for the signal categories
+    def book_weights(self):
+        self.define_only_on(self._signal_categories, "lep_charge", "MCParticlesSkimmed.charge[true_lep_idx]")
+        self.define_only_on(self._signal_categories, "mc_ME_flv", "lep_charge > 0 ? 1 : 2")
+        # TODO: optimise
+        self.define_only_on(self._signal_categories, "mc_lvec", "Construct<ROOT::Math::PxPyPzMVector>(MCParticlesSkimmed.momentum.x, MCParticlesSkimmed.momentum.y, MCParticlesSkimmed.momentum.z, MCParticlesSkimmed.mass)")
+        self.define_only_on(self._signal_categories, "mc_E", "return Map(mc_lvec, [] (const auto& el) {return el.energy();})")
+        self.define_only_on(self._signal_categories, "mc_PX", "MCParticlesSkimmed.momentum.x")
+        self.define_only_on(self._signal_categories, "mc_PY", "MCParticlesSkimmed.momentum.y")
+        self.define_only_on(self._signal_categories, "mc_PZ", "MCParticlesSkimmed.momentum.z")
+        beam_e_idx = self._mc_indices["beam_e_ISR"]
+        beam_p_idx = self._mc_indices["beam_p_ISR"]
+        self.define_only_on(self._signal_categories, "mc_ME_momenta", f"""
+                    std::vector<double>({{
+                    mc_E[{beam_e_idx}],    mc_PX[{beam_e_idx}],    mc_PY[{beam_e_idx}],    mc_PZ[{beam_e_idx}],
+                    mc_E[{beam_p_idx}],    mc_PX[{beam_p_idx}],    mc_PY[{beam_p_idx}],    mc_PZ[{beam_p_idx}],
+                    mc_E[true_lep_idx],    mc_PX[true_lep_idx],    mc_PY[true_lep_idx],    mc_PZ[true_lep_idx],
+                    mc_E[true_nu_idx],     mc_PX[true_nu_idx],     mc_PY[true_nu_idx],     mc_PZ[true_nu_idx],
+                    mc_E[true_quark1_idx], mc_PX[true_quark1_idx], mc_PY[true_quark1_idx], mc_PZ[true_quark1_idx],
+                    mc_E[true_quark2_idx], mc_PX[true_quark2_idx], mc_PY[true_quark2_idx], mc_PZ[true_quark2_idx],
+                    }})
+                    """)
+        for name, omw in self._omega_wrappers.items():
+            self.define_only_on(self._signal_categories, f"mc_sqme_{name}", omw, ["mc_ME_momenta", "mc_ME_flv"])
+            # divide by recalculated nominal as all the ILD values are broken...
+            if not name == "nominal":
+                # TODO: get sqme from whizard
+                self.define_only_on(self._signal_categories, f"weight_{name}", f"mc_sqme_{name} / mc_sqme_nominal")

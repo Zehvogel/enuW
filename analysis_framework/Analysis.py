@@ -132,6 +132,32 @@ class Analysis:
         return _sum / count
 
 
+    def store_raw_histograms(self, variable_names: list[str], output_path: str):
+        """Stores the unscaled histograms into a ROOT file, together with the meta information on the original integrated luminosity and beam polarisation"""
+        with ROOT.TFile(f"{output_path}/raw_histograms.root", "recreate") as output_file:
+            for category_name, dataframes in self._categories.items():
+                cat_dir = output_file.mkdir(category_name)
+                for k in dataframes:
+                    dir = cat_dir.mkdir(k)
+                    # add meta information
+                    meta_dir = dir.mkdir("meta")
+                    meta_dir.cd()
+                    weight_key = k.removesuffix("_signal").removesuffix("_bkg")
+                    lumi, e_pol, p_pol = self._dataset.get_lumi_and_pol(weight_key)
+                    # FIXME: great now instead of a stupid error this even crashes the kernel!
+                    lumi_par = ROOT.TParameter["float"]("lumi", lumi)
+                    lumi_par.Write()
+                    e_pol_par = ROOT.TParameter["float"]("e_pol", e_pol)
+                    e_pol_par.Write()
+                    p_pol_par = ROOT.TParameter["float"]("p_pol", p_pol)
+                    p_pol_par.Write()
+                    dir.cd()
+                    # write histos
+                    for var_name in variable_names:
+                        h = self._histograms[var_name][k]
+                        h.Write(var_name)
+
+
     # TODO: add also storage of raw histograms and a way to read them back in for mixing
     def store_histograms(self, variable_names: list[str], output_path: str, int_lumi: float = 5000, e_pol: float = 0.0, p_pol: float = 0.0):
         with ROOT.TFile(f"{output_path}/histograms_{int_lumi}_{e_pol}_{p_pol}.root", "recreate") as output_file:
@@ -426,7 +452,9 @@ class Analysis:
                 if no_rvec:
                     snapshot_options.fVector2RVec = False
                 args.append(snapshot_options)
-                self._snapshots[frame] = df.Snapshot(*args)
+                snapshot = df.Snapshot(*args)
+                self._snapshots[frame] = snapshot
+                self._booked_objects.append(snapshot)
                 # now transfer metadata
                 # need to get metadata from before the signal definition cut for correct weight
                 old_frame = frame.removesuffix("_bkg").removesuffix("_signal")

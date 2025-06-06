@@ -56,7 +56,7 @@ class Dataset():
         self._dataset[process_name].files.append(path)
 
 
-    def to_json(self, indent: int = 0):
+    def to_json(self, indent: int = 2):
         res = {}
         for name, dataset in self._dataset.items():
             res[name] = vars(dataset)
@@ -85,6 +85,16 @@ class Dataset():
         xsec = meta["xsec_fb"]
         lumi_weight = int_lumi * (xsec / n_events)
         return pol_weight * lumi_weight
+
+
+    def get_lumi_and_pol(self, process_name) -> tuple[float, float, float]:
+        meta = self._dataset[process_name].metadata
+        process_e_pol = meta.get("e_pol", 0.)
+        process_p_pol = meta.get("p_pol", 0.)
+        n_events = meta["n_events"]
+        xsec = meta["xsec_fb"]
+        lumi = n_events / xsec
+        return lumi, process_e_pol, process_p_pol
 
 
     def get_samples(self) -> Generator[tuple[str, str, list[str]], None, None]:
